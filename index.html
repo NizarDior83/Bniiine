@@ -15,6 +15,19 @@
 <body>
 
   <!-- ============================================================
+       SPLASH SCREEN — first paint, before everything else
+       ============================================================ -->
+  <div class="splash" id="splash">
+    <div class="splash__glow" aria-hidden="true"></div>
+    <div class="splash__particles" id="splashParticles" aria-hidden="true"></div>
+    <div class="splash__logo">Bniiine</div>
+    <div class="splash__arabic" lang="ar">بنين</div>
+    <div class="splash__slogan">The Ultimate North African Culinary Empire</div>
+    <div class="splash__bar" aria-hidden="true"><div class="splash__fill" id="splashFill"></div></div>
+    <div class="splash__hint" id="splashHint">Warming the tagine…</div>
+  </div>
+
+  <!-- ============================================================
        SVG ICON SPRITE — every ingredient/dish/dressing icon
        ============================================================ -->
   <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
@@ -330,6 +343,43 @@
     <symbol id="i-play" viewBox="0 0 24 24">
       <path d="M7 5 L19 12 L7 19 Z" fill="currentColor"/>
     </symbol>
+
+    <symbol id="i-gear" viewBox="0 0 24 24">
+      <path d="M12 8 A4 4 0 1 0 12 16 A4 4 0 1 0 12 8 Z M12 2 L13.5 5 L11 5 Z M12 22 L10.5 19 L13 19 Z M2 12 L5 10.5 L5 13 Z M22 12 L19 13.5 L19 11 Z M4.9 4.9 L7.5 6.5 L6.5 7.5 Z M19.1 19.1 L16.5 17.5 L17.5 16.5 Z M4.9 19.1 L6.5 16.5 L7.5 17.5 Z M19.1 4.9 L17.5 7.5 L16.5 6.5 Z" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-undo" viewBox="0 0 24 24">
+      <path d="M3 12 A9 9 0 1 1 12 21" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M3 12 L7 8 M3 12 L7 16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-trophy" viewBox="0 0 64 64">
+      <path d="M20 10 L44 10 L44 26 Q44 38 32 38 Q20 38 20 26 Z" fill="url(#g-gold)"/>
+      <path d="M14 14 L20 14 L20 24 Q14 24 14 18 Z" fill="url(#g-clay)"/>
+      <path d="M50 14 L44 14 L44 24 Q50 24 50 18 Z" fill="url(#g-clay)"/>
+      <path d="M26 38 L38 38 L36 46 L28 46 Z" fill="url(#g-clay)"/>
+      <path d="M22 46 L42 46 L42 52 L22 52 Z" fill="#7A3413"/>
+      <circle cx="32" cy="22" r="6" fill="none" stroke="#7A3413" stroke-width="1.5"/>
+      <text x="32" y="26" text-anchor="middle" font-family="serif" font-weight="700" font-size="8" fill="#7A3413">B</text>
+    </symbol>
+
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/>
+      <path d="M8 11 L8 7 A4 4 0 0 1 16 7 L16 11" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 21 C 8 17 3 13 3 8 A5 5 0 0 1 12 6 A5 5 0 0 1 21 8 C 21 13 16 17 12 21 Z" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-tea" viewBox="0 0 64 64">
+      <path d="M14 26 L46 26 L44 50 Q44 54 40 54 L20 54 Q16 54 16 50 Z" fill="url(#g-teal)"/>
+      <ellipse cx="30" cy="26" rx="16" ry="3" fill="#0F5952"/>
+      <path d="M46 32 Q56 34 54 44 Q52 48 46 46" fill="none" stroke="url(#g-teal)" stroke-width="4"/>
+      <path d="M22 18 Q24 10 28 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" fill="none"/>
+      <path d="M32 16 Q34 8 38 12" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none"/>
+      <circle cx="30" cy="40" r="3" fill="#FFD166"/>
+    </symbol>
   </svg>
 
   <!-- ============================================================
@@ -403,17 +453,39 @@
       </div>
 
       <div class="hud__actions">
+        <button class="btn btn--icon" id="undoBtn" type="button" aria-label="Undo last move" disabled>
+          <svg viewBox="0 0 24 24"><use href="#i-undo"/></svg>
+        </button>
+        <button class="btn btn--icon" id="settingsBtn" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>
+        </button>
+        <button class="btn btn--icon" id="achievementsBtn" type="button" aria-label="Achievements">
+          <svg viewBox="0 0 64 64"><use href="#i-trophy"/></svg>
+        </button>
         <button class="btn btn--ghost" id="bookBtn" type="button" aria-label="Recipe book">
           <svg viewBox="0 0 64 64"><use href="#i-book"/></svg>
-          <span>Recipes</span>
+          <span class="btn__label">Recipes</span>
         </button>
         <button class="btn btn--primary" id="crateBtn" type="button">
           <svg viewBox="0 0 64 64"><use href="#i-crate-closed"/></svg>
-          <span>Spice Crate</span>
+          <span class="btn__label">Spice Crate</span>
           <span class="btn__cost"><svg viewBox="0 0 64 64"><use href="#i-coin"/></svg>25</span>
         </button>
       </div>
     </header>
+
+    <!-- Restaurant Level + XP bar -->
+    <div class="level-bar" id="levelBar" aria-label="Restaurant Level">
+      <div class="level-bar__badge">
+        <span class="level-bar__label">Rank</span>
+        <span class="level-bar__num" id="levelNum">1</span>
+      </div>
+      <div class="level-bar__track">
+        <div class="level-bar__fill" id="levelFill"></div>
+        <span class="level-bar__title" id="levelTitle">Apprentice of the Souk</span>
+      </div>
+      <div class="level-bar__xp"><span id="xpVal">0</span> / <span id="xpMax">100</span> XP</div>
+    </div>
 
     <section class="stage">
       <!-- Left column: chef + customers -->
@@ -501,6 +573,92 @@
       <button class="btn btn--primary" id="crateContinue" type="button">Take to Kitchen</button>
     </div>
   </div>
+
+  <!-- ============================================================
+       SETTINGS MODAL
+       ============================================================ -->
+  <div class="modal" id="settingsModal" role="dialog" aria-labelledby="settingsTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="settingsClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="settingsTitle" class="modal__title">Settings</h2>
+      <p class="modal__lede">Tune the kitchen to your taste.</p>
+
+      <ul class="settings">
+        <li class="setting">
+          <label class="setting__label" for="setSfx">Sound effects</label>
+          <span class="setting__help">Tap, merge, coin, and crate sounds.</span>
+          <button class="toggle" id="setSfx" role="switch" aria-checked="true" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setMusic">Ambient music</label>
+          <span class="setting__help">Soft riad drone in the background.</span>
+          <button class="toggle" id="setMusic" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setHaptics">Haptics</label>
+          <span class="setting__help">Buzz on merge and legendary discovery. Mobile only.</span>
+          <button class="toggle" id="setHaptics" role="switch" aria-checked="true" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setMotion">Reduced motion</label>
+          <span class="setting__help">Calm the ambient animation and big bursts.</span>
+          <button class="toggle" id="setMotion" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setHiContrast">High contrast</label>
+          <span class="setting__help">Bolder outlines on tiles and cells.</span>
+          <button class="toggle" id="setHiContrast" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+      </ul>
+
+      <div class="settings__actions">
+        <button class="btn btn--ghost" id="setTutorialBtn" type="button">Replay Tutorial</button>
+        <button class="btn btn--danger" id="setResetBtn" type="button">Reset Progress</button>
+      </div>
+
+      <div class="settings__meta">
+        <span>Bniiine · v0.2</span>
+        <span>Long-press a tile to sell it for coins.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ACHIEVEMENTS MODAL
+       ============================================================ -->
+  <div class="modal" id="achievementsModal" role="dialog" aria-labelledby="achievementsTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="achievementsClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="achievementsTitle" class="modal__title">Hall of Chefs</h2>
+      <p class="modal__lede">Milestones you've mastered on your journey from souk to palace.</p>
+      <div class="achievements" id="achievementsGrid"></div>
+
+      <div class="stats" id="statsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TUTORIAL OVERLAY
+       ============================================================ -->
+  <div class="tutorial" id="tutorial" aria-hidden="true">
+    <div class="tutorial__spot" id="tutorialSpot"></div>
+    <div class="tutorial__card" id="tutorialCard">
+      <div class="tutorial__step">Step <span id="tutorialStep">1</span> / <span id="tutorialTotal">4</span></div>
+      <h3 class="tutorial__title" id="tutorialTitle">Welcome to the kitchen</h3>
+      <p class="tutorial__body" id="tutorialBody">Chef Karim will show you around.</p>
+      <div class="tutorial__actions">
+        <button class="btn btn--ghost" id="tutorialSkip" type="button">Skip</button>
+        <button class="btn btn--primary" id="tutorialNext" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Long-press ring (positioned by JS) -->
+  <div class="long-press-ring" id="longPressRing" aria-hidden="true"></div>
 
   <!-- Toast layer -->
   <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>

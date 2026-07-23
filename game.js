@@ -1,6 +1,7 @@
 /* ==========================================================================
    BNIIINE — Merge game logic
-   Vanilla ES module, saved via localStorage, mobile + desktop.
+   Splash → tutorial → merge board with juice: audio, haptics, XP, achievements,
+   undo, long-press sell, chef reactions, settings. Vanilla, localStorage-saved.
    ========================================================================== */
 
 (function () {
@@ -33,36 +34,116 @@
   };
 
   const CHAIN_KEYS = Object.keys(CHAINS);
-  const MAX_TIER   = CHAINS.spice.length;   // 5
-
-  const REWARD = { 1: 3, 2: 8, 3: 20, 4: 50, 5: 140 };  // coins by tier fulfilled
+  const MAX_TIER   = CHAINS.spice.length;
+  const REWARD = { 1: 3, 2: 8, 3: 20, 4: 50, 5: 140 };
+  const XP_FOR_MERGE = { 2: 5, 3: 15, 4: 40, 5: 100 };
+  const SELL_PRICE = { 1: 1, 2: 3, 3: 8, 4: 20, 5: 60 };
   const CRATE_COST = 25;
   const FREE_CRATE_INTERVAL_MS = 60 * 1000;
   const START_COINS = 120;
-
+  const DAILY_COINS = 50;
   const BOARD_COLS = 6;
   const BOARD_ROWS = 7;
+  const LONG_PRESS_MS = 600;
 
-  const CHEF_LINES = [
-    'Ahlan! Two cumin seeds make ras el hanout.',
-    'Three merges deep — the tagine sings.',
-    'A closed spice crate hides three surprises.',
-    'Tip: tap the order card, then tap a matching dish.',
-    'From the medina of Marrakech to the souks of Tunis.',
-    'Bismillah — let us cook something legendary.',
-    'The zellige patterns love a full board. Don\'t stall!',
+  const LEVEL_TITLES = [
+    'Kitchen Apprentice',
+    'Souk Trader',
+    'Riad Cook',
+    'Kasbah Chef',
+    'Master of the Tagine',
+    'Emir of Spices',
+    'Grand Vizier of Cuisine',
+    'Sultan of the Souk',
+    'Culinary Emperor',
+    'Legend of Marrakech',
+  ];
+
+  // Total XP required to reach level n+1 from level 1
+  function totalXpForLevel(n) { return 50 * n * (n + 1); }
+
+  const CHEF_LINES_IDLE = [
+    'Ahlan wa sahlan! Welcome to my kitchen.',
+    'Merge two cumin seeds — that is the beginning of everything.',
+    'The souk hides three surprises in every spice crate.',
+    'A tap on an order, then on a matching dish — the customer smiles.',
+    'From Marrakech to Tunis, we spread the fragrance.',
+    'Bismillah — let us cook something legendary today.',
+    'The zellige floor loves a busy board. Don\'t let it stall.',
+    'A tile you don\'t need? Hold it, and it becomes coins.',
+    'A grand tagine needs patience. Merge, and merge again.',
+  ];
+
+  const CHEF_MERGE_LINES = {
+    spice: {
+      2: ['Ras el hanout — the shopkeeper\'s secret blend.', 'Now it smells like Fes.'],
+      3: ['Harissa! Careful, my friend, this jar bites back.', 'A little heat wakes the whole dish.'],
+      4: ['The spice chest opens. Wonders inside.', 'This is what the caravans brought from Timbuktu.'],
+      5: ['✨ GRAND MASALA — you are royalty of the souk!', 'The sultans wept when they tasted this.'],
+    },
+    grain: {
+      2: ['Semolina — fine as desert sand.', 'The Berbers taught us this.'],
+      3: ['Fresh couscous! The steam alone is a prayer.', 'Fluffy, golden, ready.'],
+      4: ['Royal couscous — the guests will not stop bowing.', 'This is Friday-in-the-riad food.'],
+      5: ['✨ BERBER FEAST — three tiers, one legend!', 'Whole villages come for this.'],
+    },
+    meat: {
+      2: ['Kefta on the skewer — the coals are ready.', 'Cumin, parsley, love.'],
+      3: ['Merguez! You can hear the sizzle from here.', 'A little dangerous. A lot delicious.'],
+      4: ['Chicken tagine — preserved lemon sings.', 'Now the neighbors will visit.'],
+      5: ['✨ GRAND LAMB TAGINE — feast of Eid!', 'Slow-cooked with prunes and honor.'],
+    },
+  };
+
+  const CHEF_ORDER_LINES = [
+    'Excellent! The customer devoured every bite.',
+    'They tipped and asked when we open the second riad.',
+    'Alhamdulillah — another happy stomach.',
+    'The grandmother said it reminded her of her mother\'s kitchen.',
+  ];
+
+  const CHEF_CRATE_LINES = [
+    'Fresh spices, straight from the souk!',
+    'Bismillah — let\'s see what the crate brought us.',
+    'The caravan just arrived. Look at these colors.',
+  ];
+
+  const CHEF_LEVELUP_LINES = [
+    'You have earned a new title! The souk speaks your name.',
+    'The Sultan\'s emissary is asking after you.',
+    'This kitchen has become a school. Everyone is watching.',
+  ];
+
+  const ACHIEVEMENTS = [
+    { key: 'firstMerge',    name: 'First Merge',         desc: 'Combine two ingredients.',           icon: '#i-sparkle',  check: s => s.stats.merges >= 1 },
+    { key: 'discovery5',    name: 'Souk Regular',         desc: 'Discover 5 dishes.',                 icon: '#i-book',     check: s => discoveredCount() >= 5 },
+    { key: 'discovery10',   name: 'Well-Read Cook',       desc: 'Discover 10 dishes.',                icon: '#i-book',     check: s => discoveredCount() >= 10 },
+    { key: 'discoveryAll',  name: 'Grand Master',         desc: 'Discover every dish in the book.',   icon: '#i-trophy',   check: s => discoveredCount() >= CHAIN_KEYS.length * MAX_TIER },
+    { key: 'grandMasala',   name: 'Spice Sultan',         desc: 'Unlock Grand Masala.',               icon: '#i-grand-masala', check: s => s.discovered.spice[MAX_TIER - 1] },
+    { key: 'berberFeast',   name: 'Feast of the Ancients',desc: 'Cook the Berber Feast.',             icon: '#i-berber-feast', check: s => s.discovered.grain[MAX_TIER - 1] },
+    { key: 'lambTagine',    name: 'Emir of Tagine',       desc: 'Cook the Grand Lamb Tagine.',        icon: '#i-lamb-tagine',  check: s => s.discovered.meat[MAX_TIER - 1] },
+    { key: 'coins500',      name: 'Merchant',             desc: 'Earn 500 coins total.',              icon: '#i-coin',     check: s => s.stats.coinsEarned >= 500 },
+    { key: 'orders25',      name: 'Popular Riad',         desc: 'Fulfill 25 orders.',                 icon: '#i-tea',      check: s => s.stats.ordersDone >= 25 },
+    { key: 'level5',        name: 'Kasbah Chef',          desc: 'Reach Rank 5.',                      icon: '#i-trophy',   check: s => s.level >= 5 },
+    { key: 'sell',          name: 'Merchant\'s Wisdom',    desc: 'Sell a tile for coins.',             icon: '#i-coin',     check: s => s.stats.sold >= 1 },
+    { key: 'undo',          name: 'Cook Twice',            desc: 'Use Undo.',                          icon: '#i-undo',     check: s => s.stats.undos >= 1 },
   ];
 
   // ---------- STATE ----------
 
-  const STATE_KEY = 'bniiine.state.v1';
+  const STATE_KEY = 'bniiine.state.v2';
   const state = {
     coins: START_COINS,
+    xp: 0,
+    level: 1,
     board: makeEmptyBoard(),
     orders: [],
     discovered: Object.fromEntries(CHAIN_KEYS.map(c => [c, new Array(MAX_TIER).fill(false)])),
+    achievements: {},
     nextFreeCrate: Date.now() + FREE_CRATE_INTERVAL_MS,
-    seed: Date.now(),
+    stats: { merges: 0, ordersDone: 0, coinsEarned: 0, sold: 0, undos: 0, sessions: 0, crateOpens: 0 },
+    settings: { sfx: true, music: false, haptics: true, motion: false, hiContrast: false, tutorialDone: false },
+    lastDailyClaim: null,
   };
 
   function makeEmptyBoard() {
@@ -79,10 +160,16 @@
     try {
       localStorage.setItem(STATE_KEY, JSON.stringify({
         coins: state.coins,
+        xp: state.xp,
+        level: state.level,
         board: state.board,
         orders: state.orders,
         discovered: state.discovered,
+        achievements: state.achievements,
         nextFreeCrate: state.nextFreeCrate,
+        stats: state.stats,
+        settings: state.settings,
+        lastDailyClaim: state.lastDailyClaim,
       }));
     } catch (_) {}
   }
@@ -93,9 +180,12 @@
       if (!raw) return false;
       const s = JSON.parse(raw);
       if (!s || !Array.isArray(s.board)) return false;
-      Object.assign(state, s);
-      // Regenerate orders if empty on load
-      if (!Array.isArray(state.orders) || !state.orders.length) state.orders = [];
+      // shallow merge; keep defaults for anything missing (future settings)
+      Object.keys(s).forEach(k => { state[k] = s[k]; });
+      state.settings = Object.assign({ sfx: true, music: false, haptics: true, motion: false, hiContrast: false, tutorialDone: false }, s.settings || {});
+      state.stats    = Object.assign({ merges: 0, ordersDone: 0, coinsEarned: 0, sold: 0, undos: 0, sessions: 0, crateOpens: 0 }, s.stats || {});
+      state.achievements = s.achievements || {};
+      if (!Array.isArray(state.orders)) state.orders = [];
       return true;
     } catch (_) { return false; }
   }
@@ -104,54 +194,221 @@
 
   const $  = (sel, root) => (root || document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
-
   function rand(n) { return Math.floor(Math.random() * n); }
   function choice(arr) { return arr[rand(arr.length)]; }
-
-  function chainDef(chain, tier) {
-    return CHAINS[chain][tier - 1];
-  }
-
+  function chainDef(chain, tier) { return CHAINS[chain][tier - 1]; }
   function isBoardFull() {
-    for (let r = 0; r < BOARD_ROWS; r++)
-      for (let c = 0; c < BOARD_COLS; c++)
-        if (!state.board[r][c]) return false;
+    for (let r = 0; r < BOARD_ROWS; r++) for (let c = 0; c < BOARD_COLS; c++) if (!state.board[r][c]) return false;
     return true;
   }
-
   function findEmptyCells() {
-    const empty = [];
-    for (let r = 0; r < BOARD_ROWS; r++)
-      for (let c = 0; c < BOARD_COLS; c++)
-        if (!state.board[r][c]) empty.push([r, c]);
-    return empty;
+    const e = [];
+    for (let r = 0; r < BOARD_ROWS; r++) for (let c = 0; c < BOARD_COLS; c++) if (!state.board[r][c]) e.push([r, c]);
+    return e;
+  }
+  function discoveredCount() {
+    let n = 0;
+    CHAIN_KEYS.forEach(k => state.discovered[k].forEach(v => { if (v) n++; }));
+    return n;
   }
 
-  // ---------- RENDER ----------
+  // ==========================================================================
+  // AUDIO ENGINE (WebAudio synth — no assets)
+  // ==========================================================================
+  const AudioFX = (function () {
+    let ctx = null;
+    let musicNodes = null;
 
-  const boardEl        = $('#board');
-  const coinValEl      = $('#coinVal');
-  const unlockedEl     = $('#unlockedCount');
-  const totalCountEl   = $('#totalCount');
-  const ordersEl       = $('#orders');
-  const bookGridEl     = $('#bookGrid');
-  const bubbleEl       = $('#bubble');
-  const statusEl       = $('#status');
-  const toastsEl       = $('#toasts');
-  const freeCrateBtn   = $('#freeCrateBtn');
-  const freeCrateLbl   = $('#freeCrateLbl');
+    function ensureCtx() {
+      if (ctx) return ctx;
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+      return ctx;
+    }
 
-  const crateModal     = $('#crateModal');
-  const crateReveal    = $('#crateReveal');
-  const crateItems     = $('#crateItems');
-  const crateContinue  = $('#crateContinue');
+    function tone(freq, dur, type = 'sine', gain = 0.1, delay = 0) {
+      if (!ctx) return;
+      const now = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.001, gain), now + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      osc.connect(g).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    }
 
-  const bookModal      = $('#bookModal');
-  const bookBtn        = $('#bookBtn');
-  const bookClose      = $('#bookClose');
-  const crateBtn       = $('#crateBtn');
+    function noise(dur, gain = 0.05, filterFreq = 800) {
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const bufLen = Math.floor(ctx.sampleRate * dur);
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = filterFreq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(gain, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      src.connect(filt).connect(g).connect(ctx.destination);
+      src.start();
+    }
 
-  totalCountEl.textContent = CHAIN_KEYS.length * MAX_TIER;
+    return {
+      resume() { if (ctx && ctx.state === 'suspended') ctx.resume(); },
+      init: ensureCtx,
+      tap() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(560 + Math.random() * 140, 0.035, 'square', 0.06);
+      },
+      click() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(1050, 0.025, 'square', 0.08);
+        tone(1600, 0.04, 'sine', 0.05, 0.02);
+      },
+      merge(tier) {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        const base = 260 + tier * 55;
+        tone(base,        0.14, 'sine',     0.15);
+        tone(base * 1.26, 0.14, 'sine',     0.12, 0.05);
+        tone(base * 1.5,  0.18, 'triangle', 0.10, 0.10);
+      },
+      legendary() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(90,  1.6, 'sine',     0.28);
+        tone(180, 1.4, 'sine',     0.18);
+        tone(360, 1.2, 'triangle', 0.10);
+        tone(540, 1.0, 'sine',     0.06);
+        setTimeout(() => tone(800,  0.4, 'sine', 0.08), 380);
+        setTimeout(() => tone(1200, 0.3, 'sine', 0.06), 600);
+      },
+      coin() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(1300, 0.055, 'triangle', 0.12);
+        tone(1800, 0.06,  'sine',     0.09, 0.03);
+      },
+      crate() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        noise(0.4, 0.06, 600);
+        setTimeout(() => tone(400, 0.09, 'sawtooth', 0.10), 100);
+        setTimeout(() => tone(600, 0.10, 'triangle', 0.10), 260);
+        setTimeout(() => tone(900, 0.15, 'sine',     0.12), 400);
+      },
+      orderDone() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(700,  0.10, 'triangle', 0.14);
+        tone(900,  0.12, 'sine',     0.10, 0.08);
+        tone(1200, 0.14, 'sine',     0.08, 0.16);
+      },
+      error() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(200, 0.12, 'sawtooth', 0.10);
+        tone(150, 0.15, 'sawtooth', 0.08, 0.08);
+      },
+      levelUp() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        [392, 494, 587, 784].forEach((f, i) => tone(f, 0.16, 'triangle', 0.15, i * 0.12));
+        tone(587, 0.6, 'sine', 0.08, 0.48);
+      },
+      sell() {
+        if (!state.settings.sfx) return;
+        ensureCtx(); if (!ctx) return;
+        tone(500, 0.06, 'triangle', 0.10);
+        tone(1200, 0.08, 'sine', 0.10, 0.04);
+      },
+      startMusic() {
+        if (!state.settings.music) return;
+        ensureCtx();
+        if (!ctx || musicNodes) return;
+        // Middle-Eastern-flavored ambient drone (D + Bb harmonic minor colors)
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0, ctx.currentTime);
+        master.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 3);
+        const filt = ctx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.value = 700;
+        master.connect(filt).connect(ctx.destination);
+        const oscs = [];
+        [146.83, 220.00, 261.63, 349.23].forEach(f => {
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f;
+          o.detune.value = Math.random() * 10 - 5;
+          o.connect(master);
+          o.start();
+          oscs.push(o);
+        });
+        // slow LFO on filter
+        const lfo = ctx.createOscillator();
+        lfo.frequency.value = 0.08;
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = 200;
+        lfo.connect(lfoGain).connect(filt.frequency);
+        lfo.start();
+        musicNodes = { master, oscs, filt, lfo };
+      },
+      stopMusic() {
+        if (!musicNodes || !ctx) return;
+        const now = ctx.currentTime;
+        musicNodes.master.gain.linearRampToValueAtTime(0, now + 1);
+        const nodes = musicNodes;
+        musicNodes = null;
+        setTimeout(() => {
+          nodes.oscs.forEach(o => { try { o.stop(); } catch (_) {} });
+          try { nodes.lfo.stop(); } catch (_) {}
+        }, 1200);
+      },
+    };
+  })();
+
+  // ==========================================================================
+  // HAPTICS
+  // ==========================================================================
+  const Haptics = {
+    tap()       { if (state.settings.haptics && navigator.vibrate) navigator.vibrate(6); },
+    merge()     { if (state.settings.haptics && navigator.vibrate) navigator.vibrate([12, 18, 12]); },
+    legendary() { if (state.settings.haptics && navigator.vibrate) navigator.vibrate([25, 30, 60, 30, 100]); },
+    error()     { if (state.settings.haptics && navigator.vibrate) navigator.vibrate([10, 30, 10]); },
+    sell()      { if (state.settings.haptics && navigator.vibrate) navigator.vibrate(20); },
+    levelUp()   { if (state.settings.haptics && navigator.vibrate) navigator.vibrate([15, 20, 15, 20, 60]); },
+  };
+
+  // ==========================================================================
+  // DOM REFS (grabbed after DOM ready — booted below)
+  // ==========================================================================
+  let boardEl, coinValEl, unlockedEl, totalCountEl, ordersEl, bookGridEl,
+      bubbleEl, statusEl, toastsEl, freeCrateBtn, freeCrateLbl,
+      crateModal, crateReveal, crateItems, crateContinue,
+      bookModal, bookBtn, bookClose, crateBtn,
+      levelBar, levelNum, levelFill, levelTitleEl, xpVal, xpMax,
+      undoBtn, settingsBtn, settingsModal, settingsClose,
+      achievementsBtn, achievementsModal, achievementsClose, achievementsGrid, statsGrid,
+      setSfx, setMusic, setHaptics, setMotion, setHiContrast,
+      setTutorialBtn, setResetBtn,
+      tutorial, tutorialSpot, tutorialCard, tutorialStep, tutorialTotal,
+      tutorialTitle, tutorialBody, tutorialSkip, tutorialNext,
+      longPressRing,
+      splashEl, splashFill, splashHint, splashParticles;
+
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
+
+  let tileIdSeq = 1;
 
   function makeCell(r, c) {
     const el = document.createElement('div');
@@ -179,16 +436,9 @@
     return el;
   }
 
-  function tagTile(el, r, c) {
-    el.dataset.r = String(r);
-    el.dataset.c = String(c);
-  }
-
-  function cellAt(r, c) {
-    return boardEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-  }
-
-  let tileIdSeq = 1;
+  function tagTile(el, r, c) { el.dataset.r = String(r); el.dataset.c = String(c); }
+  function cellAt(r, c) { return boardEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); }
+  function tileAt(r, c) { return boardEl.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`); }
 
   function renderBoard() {
     boardEl.innerHTML = '';
@@ -196,7 +446,6 @@
     boardEl.style.setProperty('--board-rows', BOARD_ROWS);
     boardEl.style.setProperty('grid-template-columns', `repeat(${BOARD_COLS}, var(--cell))`);
     boardEl.style.setProperty('grid-template-rows',    `repeat(${BOARD_ROWS}, var(--cell))`);
-
     for (let r = 0; r < BOARD_ROWS; r++) {
       for (let c = 0; c < BOARD_COLS; c++) {
         const cell = makeCell(r, c);
@@ -214,10 +463,20 @@
 
   function updateHUD() {
     coinValEl.textContent = state.coins;
-    const total = CHAIN_KEYS.length * MAX_TIER;
-    let unlocked = 0;
-    CHAIN_KEYS.forEach(k => state.discovered[k].forEach(v => { if (v) unlocked++; }));
-    unlockedEl.textContent = unlocked;
+    unlockedEl.textContent = discoveredCount();
+    totalCountEl.textContent = CHAIN_KEYS.length * MAX_TIER;
+    // Level bar
+    const prevLevelTotal = totalXpForLevel(state.level - 1);
+    const nextLevelTotal = totalXpForLevel(state.level);
+    const inLevel = state.xp - prevLevelTotal;
+    const perLevel = nextLevelTotal - prevLevelTotal;
+    const pct = Math.max(0, Math.min(100, (inLevel / perLevel) * 100));
+    levelNum.textContent = state.level;
+    xpVal.textContent = inLevel;
+    xpMax.textContent = perLevel;
+    levelTitleEl.textContent = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+    levelFill.style.right = (100 - pct) + '%';
+    undoBtn.disabled = undoStack.length === 0;
   }
 
   function renderOrders() {
@@ -240,7 +499,7 @@
           <svg viewBox="0 0 64 64"><use href="#i-coin"/></svg>${o.reward}
         </span>
       `;
-      el.addEventListener('click', () => selectOrder(i));
+      el.addEventListener('click', () => { AudioFX.click(); selectOrder(i); });
       ordersEl.appendChild(el);
     });
   }
@@ -263,10 +522,201 @@
     });
   }
 
-  // ---------- INTERACTION: TAP-TAP + DRAG ----------
+  function renderAchievements() {
+    achievementsGrid.innerHTML = '';
+    ACHIEVEMENTS.forEach(a => {
+      const unlocked = !!state.achievements[a.key];
+      const el = document.createElement('div');
+      el.className = 'achievement ' + (unlocked ? 'achievement--unlocked' : 'achievement--locked');
+      el.innerHTML = `
+        <div class="achievement__icon">
+          <svg viewBox="0 0 64 64"><use href="${unlocked ? a.icon : '#i-lock'}"/></svg>
+        </div>
+        <div class="achievement__name">${unlocked ? a.name : '???'}</div>
+        <div class="achievement__desc">${a.desc}</div>
+      `;
+      achievementsGrid.appendChild(el);
+    });
+    // Stats
+    const stats = [
+      { lbl: 'Rank',        val: state.level },
+      { lbl: 'Merges',      val: state.stats.merges },
+      { lbl: 'Orders Done', val: state.stats.ordersDone },
+      { lbl: 'Coins Earned',val: state.stats.coinsEarned },
+      { lbl: 'Crates Opened', val: state.stats.crateOpens },
+      { lbl: 'Tiles Sold',  val: state.stats.sold },
+    ];
+    statsGrid.innerHTML = stats.map(s => `<div class="stat"><span class="stat__val">${s.val}</span><span class="stat__lbl">${s.lbl}</span></div>`).join('');
+  }
 
-  let selectedCell = null;   // { r, c }
+  // ==========================================================================
+  // XP + LEVELS
+  // ==========================================================================
+
+  function addXP(amount, sourceRect) {
+    state.xp += amount;
+    // Level up loop (in case of huge XP jump)
+    while (state.xp >= totalXpForLevel(state.level) && state.level < LEVEL_TITLES.length) {
+      state.level += 1;
+      onLevelUp();
+    }
+    if (sourceRect) floatText(sourceRect.left + sourceRect.width / 2, sourceRect.top, `+${amount} XP`, 'xp');
+    updateHUD();
+  }
+
+  function onLevelUp() {
+    AudioFX.levelUp();
+    Haptics.levelUp();
+    levelBar.classList.add('is-levelup');
+    setTimeout(() => levelBar.classList.remove('is-levelup'), 1200);
+    const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+    showToast(`Rank ${state.level} — ${title}!`, 'info');
+    setBubble(choice(CHEF_LEVELUP_LINES));
+    confettiBurst(window.innerWidth / 2, window.innerHeight / 2, 50);
+  }
+
+  // ==========================================================================
+  // ACHIEVEMENTS
+  // ==========================================================================
+
+  function checkAchievements() {
+    ACHIEVEMENTS.forEach(a => {
+      if (!state.achievements[a.key] && a.check(state)) {
+        state.achievements[a.key] = Date.now();
+        showToast(`🏆 ${a.name}`, 'info');
+        confettiBurst(window.innerWidth / 2, 120, 24);
+      }
+    });
+  }
+
+  // ==========================================================================
+  // UNDO
+  // ==========================================================================
+
+  const undoStack = [];
+  function pushUndo(label) {
+    undoStack.length = 0;   // single-step undo
+    undoStack.push({
+      label,
+      snap: JSON.parse(JSON.stringify({
+        coins: state.coins,
+        xp:    state.xp,
+        level: state.level,
+        board: state.board,
+        orders: state.orders,
+        discovered: state.discovered,
+      })),
+    });
+  }
+  function undo() {
+    if (!undoStack.length) return;
+    const { snap } = undoStack.pop();
+    Object.assign(state, snap);
+    state.stats.undos += 1;
+    renderBoard();
+    renderOrders();
+    updateHUD();
+    checkAchievements();
+    saveState();
+    setStatus('Undone.');
+    AudioFX.click();
+  }
+
+  // ==========================================================================
+  // FEEDBACK: TOAST / BUBBLE / STATUS / COINS / DELICIOUS / CONFETTI / FLOAT
+  // ==========================================================================
+
+  function setStatus(text) { if (statusEl) statusEl.textContent = text; }
+  function setBubble(text) { if (bubbleEl) bubbleEl.textContent = text; }
+
+  function showToast(text, kind) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (kind === 'info' ? ' toast--info' : (kind === 'warn' ? ' toast--warn' : ''));
+    el.innerHTML = `<svg viewBox="0 0 64 64"><use href="#i-sparkle"/></svg><span>${text}</span>`;
+    toastsEl.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+  }
+
+  function floatText(x, y, text, kind) {
+    const el = document.createElement('div');
+    el.className = 'float-text' + (kind === 'coin' ? ' float-text--coin' : (kind === 'sell' ? ' float-text--sell' : (kind === 'warn' ? ' float-text--warn' : '')));
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+
+  function flyCoinsFrom(x, y, amount) {
+    const coinCount = Math.min(6, Math.max(3, Math.ceil(amount / 10)));
+    const meter = coinValEl.closest('.meter');
+    const target = meter ? meter.getBoundingClientRect() : { top: 40, left: window.innerWidth / 2, width: 40, height: 40 };
+    const tx = target.left + target.width / 2;
+    const ty = target.top  + target.height / 2;
+    for (let i = 0; i < coinCount; i++) {
+      const c = document.createElement('div');
+      c.className = 'coin-fly';
+      c.innerHTML = '<svg viewBox="0 0 64 64" width="34" height="34"><use href="#i-coin"/></svg>';
+      c.style.left = (x - 17) + 'px';
+      c.style.top  = (y - 17) + 'px';
+      document.body.appendChild(c);
+      const dx = tx - x + (Math.random() * 40 - 20);
+      const dy = ty - y + (Math.random() * 40 - 20);
+      c.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: `translate(${dx * 0.5}px, ${dy * 0.3 - 40}px) scale(1.2)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.6)`, opacity: 0 },
+      ], { duration: 900 + i * 60, easing: 'cubic-bezier(.4,0,.2,1)' }).onfinish = () => c.remove();
+    }
+  }
+
+  function showDelicious() {
+    const el = document.createElement('div');
+    el.className = 'delicious';
+    el.textContent = 'DELICIOUS!';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+
+  function screenShake() {
+    const target = $('#app');
+    if (!target) return;
+    target.animate([
+      { transform: 'translate(0,0)' }, { transform: 'translate(-6px, 2px)' },
+      { transform: 'translate(6px, -2px)' }, { transform: 'translate(-3px, 1px)' },
+      { transform: 'translate(0,0)' },
+    ], { duration: 350, easing: 'ease-out' });
+  }
+
+  function confettiBurst(x, y, count) {
+    if (state.settings.motion) count = Math.min(count, 8);
+    const colors = ['#FFD166', '#E8A62B', '#C4622D', '#2A9D8F', '#1C4E80', '#7A1E28'];
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti';
+      p.style.background = colors[i % colors.length];
+      p.style.left = (x - 5) + 'px';
+      p.style.top  = (y - 7) + 'px';
+      document.body.appendChild(p);
+      const dx = (Math.random() - 0.5) * 500;
+      const dy = -Math.random() * 300 - 120;
+      const rot = (Math.random() - 0.5) * 720;
+      p.animate([
+        { transform: 'translate(0,0) rotate(0)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${dx * 1.2}px, ${dy + 400}px) rotate(${rot * 1.2}deg)`, opacity: 0 },
+      ], { duration: 1400 + Math.random() * 400, easing: 'cubic-bezier(.2, .7, .3, 1)' }).onfinish = () => p.remove();
+    }
+  }
+
+  // ==========================================================================
+  // INTERACTION: TAP-TAP + DRAG + LONG-PRESS-TO-SELL
+  // ==========================================================================
+
+  let selectedCell = null;
   let activeOrderIdx = -1;
+  let dragState = null;
+  let longPressTimer = null;
 
   function highlightSelection() {
     $$('.tile.is-selected', boardEl).forEach(el => el.classList.remove('is-selected'));
@@ -276,13 +726,9 @@
     }
   }
 
-  function tileAt(r, c) {
-    return boardEl.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
-  }
-
   function cellFromEvent(evt) {
     const rect = boardEl.getBoundingClientRect();
-    const x = evt.clientX - rect.left - 8;   // subtract padding
+    const x = evt.clientX - rect.left - 8;
     const y = evt.clientY - rect.top  - 8;
     const cellPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell'));
     const gap    = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-gap'));
@@ -292,18 +738,25 @@
     return { r, c };
   }
 
+  function invalidShake(el) {
+    if (!el) return;
+    el.classList.add('is-invalid-shake');
+    setTimeout(() => el.classList.remove('is-invalid-shake'), 400);
+    AudioFX.error();
+    Haptics.error();
+  }
+
   function onCellTap(r, c) {
     const item = state.board[r][c];
 
-    // Order-fulfill flow
     if (activeOrderIdx >= 0 && item) {
       const order = state.orders[activeOrderIdx];
       if (order && item.chain === order.chain && item.tier === order.tier) {
         fulfillOrder(activeOrderIdx, r, c);
         return;
       } else {
-        setStatus('That dish does not match the order. Try another.');
-        // fall through to normal selection
+        setStatus('That dish does not match the order.');
+        invalidShake(tileAt(r, c));
       }
     }
 
@@ -311,12 +764,13 @@
       if (item) {
         selectedCell = { r, c };
         highlightSelection();
-        setStatus(`Selected ${chainDef(item.chain, item.tier).name}. Tap a matching tile to merge.`);
+        AudioFX.tap();
+        Haptics.tap();
+        setStatus(`Selected ${chainDef(item.chain, item.tier).name}. Tap a match to merge.`);
       }
       return;
     }
 
-    // A tile is already selected
     if (selectedCell.r === r && selectedCell.c === c) {
       selectedCell = null;
       highlightSelection();
@@ -328,26 +782,25 @@
     if (!source) { selectedCell = null; highlightSelection(); return; }
 
     if (!item) {
-      // Move to empty cell
       moveTile(selectedCell.r, selectedCell.c, r, c);
-      selectedCell = null;
-      highlightSelection();
+      selectedCell = null; highlightSelection();
       return;
     }
 
-    // Both cells have tiles
     if (item.chain === source.chain && item.tier === source.tier && source.tier < MAX_TIER) {
       mergeTiles(selectedCell.r, selectedCell.c, r, c);
     } else {
-      // Switch selection
       selectedCell = { r, c };
       highlightSelection();
+      AudioFX.tap();
+      Haptics.tap();
       setStatus(`Selected ${chainDef(item.chain, item.tier).name}.`);
     }
   }
 
   function moveTile(fromR, fromC, toR, toC) {
     const item = state.board[fromR][fromC];
+    pushUndo('move');
     state.board[toR][toC] = item;
     state.board[fromR][fromC] = null;
     const tile = tileAt(fromR, fromC);
@@ -357,7 +810,10 @@
       dstCell.appendChild(tile);
     }
     setStatus(`Moved ${chainDef(item.chain, item.tier).name}.`);
+    AudioFX.tap();
+    Haptics.tap();
     saveState();
+    updateHUD();
   }
 
   function mergeTiles(srcR, srcC, dstR, dstC) {
@@ -367,12 +823,14 @@
     if (src.chain !== dst.chain || src.tier !== dst.tier) return;
     if (dst.tier >= MAX_TIER) return;
 
+    pushUndo('merge');
+
     const newTier = dst.tier + 1;
     const merged = { chain: dst.chain, tier: newTier, id: tileIdSeq++ };
     state.board[srcR][srcC] = null;
     state.board[dstR][dstC] = merged;
+    state.stats.merges += 1;
 
-    // Animate
     const srcTile = tileAt(srcR, srcC);
     const dstTile = tileAt(dstR, dstC);
     if (srcTile) srcTile.remove();
@@ -381,13 +839,10 @@
       burst.className = 'burst';
       dstTile.appendChild(burst);
       setTimeout(() => burst.remove(), 700);
-
-      // Replace visual
       const def = chainDef(merged.chain, merged.tier);
       dstTile.dataset.tier = String(newTier);
       dstTile.setAttribute('aria-label', `${def.name}, tier ${newTier}`);
       dstTile.classList.remove('is-selected', 'is-spawning');
-      // trigger reflow
       void dstTile.offsetWidth;
       dstTile.classList.add('is-spawning');
       dstTile.innerHTML = `
@@ -396,21 +851,40 @@
       `;
     }
 
+    // Feedback: audio, haptics, XP, chef reaction
+    if (merged.tier === MAX_TIER) {
+      AudioFX.legendary();
+      Haptics.legendary();
+    } else {
+      AudioFX.merge(merged.tier);
+      Haptics.merge();
+    }
+
+    const xpGain = XP_FOR_MERGE[merged.tier] || 5;
+    const rectRef = dstTile ? dstTile.getBoundingClientRect() : null;
+    addXP(xpGain, rectRef);
+
     const def = chainDef(merged.chain, merged.tier);
     const wasNew = !state.discovered[merged.chain][merged.tier - 1];
     if (wasNew) {
       state.discovered[merged.chain][merged.tier - 1] = true;
       showToast(`Discovered ${def.name}!`, 'info');
-      setBubble(`${def.name} unlocked! Every dish joins your empire.`);
+      if (rectRef) confettiBurst(rectRef.left + rectRef.width / 2, rectRef.top + rectRef.height / 2, 22);
+      // Contextual chef line
+      const lines = (CHEF_MERGE_LINES[merged.chain] || {})[merged.tier] || [];
+      if (lines.length) setBubble(choice(lines));
+      else setBubble(`${def.name} unlocked!`);
     } else {
-      setStatus(`Merged into ${def.name} (T${merged.tier}).`);
+      setStatus(`Merged into ${def.name}.`);
     }
 
     if (merged.tier === MAX_TIER) {
       showDelicious();
       screenShake();
+      if (rectRef) confettiBurst(rectRef.left + rectRef.width / 2, rectRef.top + rectRef.height / 2, 40);
     }
 
+    checkAchievements();
     updateHUD();
     renderBook();
     saveState();
@@ -430,15 +904,58 @@
     return { r, c };
   }
 
-  // ---------- POINTER (drag) ----------
+  // ---------- POINTER + LONG-PRESS ----------
 
-  let dragState = null;
+  function startLongPress(evt, tile, r, c) {
+    clearTimeout(longPressTimer);
+    const rect = tile.getBoundingClientRect();
+    longPressRing.style.left = (rect.left + rect.width / 2) + 'px';
+    longPressRing.style.top  = (rect.top  + rect.height / 2) + 'px';
+    // Force reflow before adding the active class so the animation restarts
+    void longPressRing.offsetWidth;
+    longPressRing.classList.add('is-active');
+    longPressTimer = setTimeout(() => {
+      // Complete long-press → SELL
+      longPressRing.classList.remove('is-active');
+      sellTile(r, c);
+      dragState = null;
+    }, LONG_PRESS_MS);
+  }
+
+  function cancelLongPress() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+    longPressRing.classList.remove('is-active');
+  }
+
+  function sellTile(r, c) {
+    const item = state.board[r][c];
+    if (!item) return;
+    pushUndo('sell');
+    const price = SELL_PRICE[item.tier] || 1;
+    state.board[r][c] = null;
+    state.stats.sold += 1;
+    state.stats.coinsEarned += price;
+    state.coins += price;
+    const tile = tileAt(r, c);
+    if (tile) {
+      const rect = tile.getBoundingClientRect();
+      floatText(rect.left + rect.width / 2, rect.top, `+${price}`, 'sell');
+      tile.remove();
+    }
+    AudioFX.sell();
+    Haptics.sell();
+    checkAchievements();
+    updateHUD();
+    setStatus(`Sold ${chainDef(item.chain, item.tier).name} for ${price} coins.`);
+    saveState();
+  }
 
   function onPointerDown(evt) {
     if (evt.button !== undefined && evt.button !== 0) return;
+    AudioFX.resume();
     const tile = evt.target.closest('.tile');
     if (!tile) {
-      // click on empty cell — treat as tap
       const cell = evt.target.closest('.cell');
       if (cell) {
         const r = +cell.dataset.r, c = +cell.dataset.c;
@@ -448,11 +965,10 @@
     }
     const c = parseInt(tile.dataset.c, 10);
     const r = parseInt(tile.dataset.r, 10);
-    dragState = {
-      startR: r, startC: c, tile, moved: false,
-      startX: evt.clientX, startY: evt.clientY,
-    };
+    dragState = { startR: r, startC: c, tile, moved: false, startX: evt.clientX, startY: evt.clientY };
+    tile.classList.add('is-pressed');
     tile.setPointerCapture?.(evt.pointerId);
+    startLongPress(evt, tile, r, c);
   }
 
   function onPointerMove(evt) {
@@ -461,6 +977,8 @@
     const dy = evt.clientY - dragState.startY;
     if (!dragState.moved && Math.hypot(dx, dy) > 10) {
       dragState.moved = true;
+      cancelLongPress();
+      dragState.tile.classList.remove('is-pressed');
       dragState.tile.classList.add('is-picked');
     }
     if (dragState.moved) {
@@ -483,8 +1001,9 @@
   function onPointerUp(evt) {
     if (!dragState) return;
     const { tile, startR, startC, moved } = dragState;
+    cancelLongPress();
     tile.style.transform = '';
-    tile.classList.remove('is-picked');
+    tile.classList.remove('is-pressed', 'is-picked');
     $$('.cell.is-target, .cell.is-invalid', boardEl).forEach(el => el.classList.remove('is-target', 'is-invalid'));
 
     if (!moved) {
@@ -498,25 +1017,23 @@
           moveTile(startR, startC, target.r, target.c);
         } else if (src && dst.chain === src.chain && dst.tier === src.tier && src.tier < MAX_TIER) {
           mergeTiles(startR, startC, target.r, target.c);
+        } else {
+          invalidShake(tileAt(startR, startC));
         }
       }
     }
     dragState = null;
   }
 
-  // ---------- ORDERS ----------
+  // ==========================================================================
+  // ORDERS
+  // ==========================================================================
 
   function generateOrder() {
-    // Bias order to a discovered tier or one just above
     const chain = choice(CHAIN_KEYS);
-    const maxDiscoveredTier = Math.max(1,
-      state.discovered[chain].reduce((max, v, i) => v ? Math.max(max, i + 1) : max, 1));
+    const maxDiscoveredTier = Math.max(1, state.discovered[chain].reduce((max, v, i) => v ? Math.max(max, i + 1) : max, 1));
     const tier = Math.max(1, Math.min(MAX_TIER, maxDiscoveredTier - rand(2) + 1));
-    return {
-      chain,
-      tier,
-      reward: REWARD[tier],
-    };
+    return { chain, tier, reward: REWARD[tier] };
   }
 
   function ensureOrders() {
@@ -530,7 +1047,7 @@
     if (activeOrderIdx >= 0) {
       const o = state.orders[idx];
       const def = chainDef(o.chain, o.tier);
-      setStatus(`Now select a ${def.name} (Tier ${o.tier}) from the board.`);
+      setStatus(`Now tap a ${def.name} (Tier ${o.tier}) on the board.`);
     } else {
       setStatus('Order deselected.');
     }
@@ -540,38 +1057,51 @@
     const order = state.orders[idx];
     const item  = state.board[r][c];
     if (!order || !item) return;
-    // Remove tile
+    pushUndo('order');
     state.board[r][c] = null;
     const tile = tileAt(r, c);
+    let x = window.innerWidth / 2, y = window.innerHeight / 2;
     if (tile) {
-      // fly-away
       const rect = tile.getBoundingClientRect();
+      x = rect.left + rect.width / 2; y = rect.top + rect.height / 2;
       tile.remove();
-      flyCoinsFrom(rect.left + rect.width / 2, rect.top + rect.height / 2, order.reward);
     }
+    flyCoinsFrom(x, y, order.reward);
     state.coins += order.reward;
+    state.stats.coinsEarned += order.reward;
+    state.stats.ordersDone  += 1;
     state.orders.splice(idx, 1);
     activeOrderIdx = -1;
-    showToast(`+${order.reward} served!`, 'default');
-    setBubble(`Excellent! The customer devoured the ${chainDef(order.chain, order.tier).name}.`);
+    AudioFX.orderDone();
+    Haptics.merge();
+    addXP(Math.round(order.reward / 3), tile ? tile.getBoundingClientRect() : null);
+    showToast(`+${order.reward} coins served!`);
+    setBubble(choice(CHEF_ORDER_LINES));
     ensureOrders();
+    checkAchievements();
     updateHUD();
     saveState();
   }
 
-  // ---------- SPICE CRATE ----------
+  // ==========================================================================
+  // SPICE CRATE
+  // ==========================================================================
 
   function openCrate(free) {
     if (!free) {
       if (state.coins < CRATE_COST) {
+        AudioFX.error();
+        Haptics.error();
         showToast('Not enough coins.', 'warn');
         return;
       }
       state.coins -= CRATE_COST;
       updateHUD();
     }
+    state.stats.crateOpens += 1;
+    AudioFX.crate();
+    Haptics.tap();
 
-    // Choose drops — 3 items biased to tier 1-2, sometimes a higher tier
     const drops = [];
     for (let i = 0; i < 3; i++) {
       const chain = choice(CHAIN_KEYS);
@@ -582,7 +1112,6 @@
       drops.push({ chain, tier });
     }
 
-    // Build modal reveal
     crateItems.innerHTML = '';
     drops.forEach(d => {
       const def = chainDef(d.chain, d.tier);
@@ -596,13 +1125,15 @@
     crateModal.classList.add('is-open');
     crateModal.setAttribute('aria-hidden', 'false');
 
-    // trigger open after brief moment
-    setTimeout(() => crateReveal.classList.add('is-open'), 400);
+    setTimeout(() => {
+      crateReveal.classList.add('is-open');
+      AudioFX.coin();
+    }, 400);
 
     crateContinue.onclick = () => {
+      AudioFX.click();
       crateModal.classList.remove('is-open');
       crateModal.setAttribute('aria-hidden', 'true');
-      // Place items on the board
       let placed = 0;
       drops.forEach((d, i) => {
         setTimeout(() => {
@@ -613,7 +1144,7 @@
           }
         }, i * 120);
       });
-      setBubble('Fresh spices delivered from the souk!');
+      setBubble(choice(CHEF_CRATE_LINES));
     };
 
     if (free) {
@@ -637,85 +1168,154 @@
     }
   }
 
-  setInterval(updateFreeCrateBtn, 1000);
+  // ==========================================================================
+  // SETTINGS
+  // ==========================================================================
 
-  // ---------- FEEDBACK: TOASTS, BUBBLE, COINS, DELICIOUS ----------
-
-  function setStatus(text) {
-    statusEl.textContent = text;
+  function applySettings() {
+    document.body.classList.toggle('hi-contrast', !!state.settings.hiContrast);
+    document.body.classList.toggle('reduced-motion', !!state.settings.motion);
+    if (state.settings.music) AudioFX.startMusic(); else AudioFX.stopMusic();
+    refreshToggles();
   }
 
-  function setBubble(text) {
-    bubbleEl.textContent = text;
+  function refreshToggles() {
+    setSfx.setAttribute('aria-checked',        state.settings.sfx        ? 'true' : 'false');
+    setMusic.setAttribute('aria-checked',      state.settings.music      ? 'true' : 'false');
+    setHaptics.setAttribute('aria-checked',    state.settings.haptics    ? 'true' : 'false');
+    setMotion.setAttribute('aria-checked',     state.settings.motion     ? 'true' : 'false');
+    setHiContrast.setAttribute('aria-checked', state.settings.hiContrast ? 'true' : 'false');
   }
 
-  function showToast(text, kind) {
-    const el = document.createElement('div');
-    el.className = 'toast' + (kind === 'info' ? ' toast--info' : (kind === 'warn' ? ' toast--warn' : ''));
-    el.innerHTML = `<svg viewBox="0 0 64 64"><use href="#i-sparkle"/></svg><span>${text}</span>`;
-    toastsEl.appendChild(el);
-    setTimeout(() => el.remove(), 2200);
-  }
-
-  function flyCoinsFrom(x, y, amount) {
-    const coinCount = Math.min(6, Math.max(3, Math.ceil(amount / 10)));
-    const meter = coinValEl.closest('.meter');
-    const target = meter ? meter.getBoundingClientRect() : { top: 40, left: window.innerWidth / 2, width: 40, height: 40 };
-    const tx = target.left + target.width / 2;
-    const ty = target.top  + target.height / 2;
-    for (let i = 0; i < coinCount; i++) {
-      const c = document.createElement('div');
-      c.className = 'coin-fly';
-      c.innerHTML = '<svg viewBox="0 0 64 64" width="34" height="34"><use href="#i-coin"/></svg>';
-      c.style.left = (x - 17) + 'px';
-      c.style.top  = (y - 17) + 'px';
-      document.body.appendChild(c);
-      const dx = tx - x + (Math.random() * 40 - 20);
-      const dy = ty - y + (Math.random() * 40 - 20);
-      c.animate([
-        { transform: 'translate(0,0) scale(1)',      opacity: 1 },
-        { transform: `translate(${dx * 0.5}px, ${dy * 0.3 - 40}px) scale(1.2)`, opacity: 1, offset: 0.5 },
-        { transform: `translate(${dx}px, ${dy}px)   scale(0.6)`, opacity: 0 },
-      ], { duration: 900 + i * 60, easing: 'cubic-bezier(.4,0,.2,1)' }).onfinish = () => c.remove();
+  function wireSettings() {
+    function bindToggle(el, key) {
+      el.addEventListener('click', () => {
+        state.settings[key] = !state.settings[key];
+        AudioFX.click();
+        applySettings();
+        saveState();
+      });
     }
-  }
+    bindToggle(setSfx,        'sfx');
+    bindToggle(setMusic,      'music');
+    bindToggle(setHaptics,    'haptics');
+    bindToggle(setMotion,     'motion');
+    bindToggle(setHiContrast, 'hiContrast');
 
-  function showDelicious() {
-    const el = document.createElement('div');
-    el.className = 'delicious';
-    el.textContent = 'DELICIOUS!';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1200);
-  }
-
-  function screenShake() {
-    const target = $('#app');
-    if (!target) return;
-    target.animate([
-      { transform: 'translate(0,0)' },
-      { transform: 'translate(-6px, 2px)' },
-      { transform: 'translate(6px, -2px)' },
-      { transform: 'translate(-3px, 1px)' },
-      { transform: 'translate(0,0)' },
-    ], { duration: 350, easing: 'ease-out' });
-  }
-
-  // ---------- BOOT ----------
-
-  function seedInitialBoard() {
-    // 3 groups of 3 tier-1 items so player can immediately merge
-    const startingDrops = [
-      { chain: 'spice', tier: 1 }, { chain: 'spice', tier: 1 }, { chain: 'spice', tier: 1 },
-      { chain: 'grain', tier: 1 }, { chain: 'grain', tier: 1 }, { chain: 'grain', tier: 1 },
-      { chain: 'meat',  tier: 1 }, { chain: 'meat',  tier: 1 }, { chain: 'meat',  tier: 1 },
-      { chain: 'spice', tier: 2 }, { chain: 'grain', tier: 2 },
-    ];
-    startingDrops.forEach(d => {
-      const empty = findEmptyCells();
-      if (!empty.length) return;
-      const [r, c] = choice(empty);
-      state.board[r][c] = { chain: d.chain, tier: d.tier, id: tileIdSeq++ };
+    setTutorialBtn.addEventListener('click', () => {
+      AudioFX.click();
+      closeModal(settingsModal);
+      state.settings.tutorialDone = false;
+      saveState();
+      Tutorial.run();
     });
+    setResetBtn.addEventListener('click', () => {
+      AudioFX.click();
+      if (!confirm('Reset all progress? This cannot be undone.')) return;
+      localStorage.removeItem(STATE_KEY);
+      location.reload();
+    });
+  }
+
+  // ==========================================================================
+  // TUTORIAL
+  // ==========================================================================
+
+  const Tutorial = {
+    steps: [
+      {
+        title: 'Meet the board',
+        body: 'This is your merge kitchen. Every tile is a step toward a legendary dish. Tap two matching ingredients to combine them.',
+        target: () => boardEl,
+      },
+      {
+        title: 'Serve the souk',
+        body: 'Souk Orders show what customers want. Tap an order card, then tap a matching dish on the board — coins fly to your meter.',
+        target: () => document.querySelector('.stalls'),
+      },
+      {
+        title: 'Open a Spice Crate',
+        body: 'Crates drop three new ingredients into empty cells. One is free every 60 seconds, or spend 25 coins for another.',
+        target: () => document.getElementById('crateBtn'),
+      },
+      {
+        title: 'Sell tiles you don\'t need',
+        body: 'Board full? Long-press a tile to sell it for coins. Grand dishes sell for a lot more than raw ingredients.',
+        target: () => document.getElementById('undoBtn'),
+      },
+    ],
+    idx: 0,
+    run() {
+      Tutorial.idx = 0;
+      tutorial.classList.add('is-open');
+      tutorial.setAttribute('aria-hidden', 'false');
+      tutorialTotal.textContent = Tutorial.steps.length;
+      Tutorial.show();
+    },
+    show() {
+      const s = Tutorial.steps[Tutorial.idx];
+      tutorialStep.textContent  = Tutorial.idx + 1;
+      tutorialTitle.textContent = s.title;
+      tutorialBody.textContent  = s.body;
+      // Position spotlight
+      const el = s.target && s.target();
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const size = Math.max(120, Math.min(320, Math.max(r.width, r.height) * 1.2));
+        tutorialSpot.style.left = (r.left + r.width / 2) + 'px';
+        tutorialSpot.style.top  = (r.top  + r.height / 2) + 'px';
+        tutorialSpot.style.width  = size + 'px';
+        tutorialSpot.style.height = size + 'px';
+        tutorialSpot.style.transform = 'translate(-50%, -50%)';
+      }
+      tutorialNext.textContent = (Tutorial.idx === Tutorial.steps.length - 1) ? 'Start cooking' : 'Next';
+    },
+    next() {
+      if (Tutorial.idx < Tutorial.steps.length - 1) {
+        Tutorial.idx += 1;
+        Tutorial.show();
+      } else {
+        Tutorial.finish();
+      }
+    },
+    finish() {
+      tutorial.classList.remove('is-open');
+      tutorial.setAttribute('aria-hidden', 'true');
+      state.settings.tutorialDone = true;
+      saveState();
+    },
+  };
+
+  function wireTutorial() {
+    tutorialNext.addEventListener('click', () => { AudioFX.click(); Tutorial.next(); });
+    tutorialSkip.addEventListener('click', () => { AudioFX.click(); Tutorial.finish(); });
+  }
+
+  // ==========================================================================
+  // MODALS
+  // ==========================================================================
+
+  function openModal(m)  { m.classList.add('is-open'); m.setAttribute('aria-hidden', 'false'); }
+  function closeModal(m) { m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true'); }
+
+  // ==========================================================================
+  // DAILY REWARD + AMBIENT
+  // ==========================================================================
+
+  function checkDailyReward() {
+    const today = new Date().toDateString();
+    if (state.lastDailyClaim === today) return;
+    state.lastDailyClaim = today;
+    state.coins += DAILY_COINS;
+    state.stats.coinsEarned += DAILY_COINS;
+    updateHUD();
+    saveState();
+    setTimeout(() => {
+      showToast(`Daily gift: +${DAILY_COINS} coins`, 'info');
+      AudioFX.coin();
+      confettiBurst(window.innerWidth / 2, 120, 20);
+      setBubble('The market gifted you a purse of coins this morning.');
+    }, 800);
   }
 
   function spawnAmbientParticles() {
@@ -734,11 +1334,140 @@
   function rotateChefLines() {
     let idx = 0;
     setInterval(() => {
-      if (!bubbleEl.dataset.pinned) {
-        idx = (idx + 1) % CHEF_LINES.length;
-        setBubble(CHEF_LINES[idx]);
+      if (!bubbleEl.dataset.pinned && !tutorial.classList.contains('is-open')) {
+        idx = (idx + 1) % CHEF_LINES_IDLE.length;
+        setBubble(CHEF_LINES_IDLE[idx]);
       }
     }, 12000);
+  }
+
+  // ==========================================================================
+  // SPLASH FLOW
+  // ==========================================================================
+
+  function runSplash(onDone) {
+    // Random hint rotation
+    const hints = [
+      'Warming the tagine…',
+      'Grinding cumin and coriander…',
+      'Rolling msemen dough…',
+      'Steeping mint for the tea…',
+      'Polishing the zellige tiles…',
+      'Lighting the lanterns…',
+    ];
+    let hintIdx = 0;
+    const hintTimer = setInterval(() => {
+      hintIdx = (hintIdx + 1) % hints.length;
+      if (splashHint) splashHint.textContent = hints[hintIdx];
+    }, 550);
+
+    // Splash sparks
+    for (let i = 0; i < 30; i++) {
+      const s = document.createElement('span');
+      s.style.left = (Math.random() * 100) + 'vw';
+      s.style.animationDuration = (2 + Math.random() * 3) + 's';
+      s.style.animationDelay = (Math.random() * 3) + 's';
+      splashParticles.appendChild(s);
+    }
+
+    // Progress bar over ~2.4s
+    const startedAt = Date.now();
+    const duration = 2400;
+    const raf = () => {
+      const t = Math.min(1, (Date.now() - startedAt) / duration);
+      splashFill.style.right = (100 - t * 100) + '%';
+      if (t < 1) requestAnimationFrame(raf);
+      else {
+        clearInterval(hintTimer);
+        setTimeout(() => {
+          splashEl.classList.add('is-gone');
+          setTimeout(onDone, 700);
+        }, 250);
+      }
+    };
+    requestAnimationFrame(raf);
+  }
+
+  // ==========================================================================
+  // SEEDING + BOOT
+  // ==========================================================================
+
+  function seedInitialBoard() {
+    const startingDrops = [
+      { chain: 'spice', tier: 1 }, { chain: 'spice', tier: 1 }, { chain: 'spice', tier: 1 },
+      { chain: 'grain', tier: 1 }, { chain: 'grain', tier: 1 }, { chain: 'grain', tier: 1 },
+      { chain: 'meat',  tier: 1 }, { chain: 'meat',  tier: 1 }, { chain: 'meat',  tier: 1 },
+      { chain: 'spice', tier: 2 }, { chain: 'grain', tier: 2 },
+    ];
+    startingDrops.forEach(d => {
+      const empty = findEmptyCells();
+      if (!empty.length) return;
+      const [r, c] = choice(empty);
+      state.board[r][c] = { chain: d.chain, tier: d.tier, id: tileIdSeq++ };
+    });
+  }
+
+  function grabDom() {
+    boardEl        = $('#board');
+    coinValEl      = $('#coinVal');
+    unlockedEl     = $('#unlockedCount');
+    totalCountEl   = $('#totalCount');
+    ordersEl       = $('#orders');
+    bookGridEl     = $('#bookGrid');
+    bubbleEl       = $('#bubble');
+    statusEl       = $('#status');
+    toastsEl       = $('#toasts');
+    freeCrateBtn   = $('#freeCrateBtn');
+    freeCrateLbl   = $('#freeCrateLbl');
+    crateModal     = $('#crateModal');
+    crateReveal    = $('#crateReveal');
+    crateItems     = $('#crateItems');
+    crateContinue  = $('#crateContinue');
+    bookModal      = $('#bookModal');
+    bookBtn        = $('#bookBtn');
+    bookClose      = $('#bookClose');
+    crateBtn       = $('#crateBtn');
+
+    levelBar       = $('#levelBar');
+    levelNum       = $('#levelNum');
+    levelFill      = $('#levelFill');
+    levelTitleEl   = $('#levelTitle');
+    xpVal          = $('#xpVal');
+    xpMax          = $('#xpMax');
+    undoBtn        = $('#undoBtn');
+    settingsBtn    = $('#settingsBtn');
+    settingsModal  = $('#settingsModal');
+    settingsClose  = $('#settingsClose');
+    achievementsBtn   = $('#achievementsBtn');
+    achievementsModal = $('#achievementsModal');
+    achievementsClose = $('#achievementsClose');
+    achievementsGrid  = $('#achievementsGrid');
+    statsGrid         = $('#statsGrid');
+
+    setSfx         = $('#setSfx');
+    setMusic       = $('#setMusic');
+    setHaptics     = $('#setHaptics');
+    setMotion      = $('#setMotion');
+    setHiContrast  = $('#setHiContrast');
+    setTutorialBtn = $('#setTutorialBtn');
+    setResetBtn    = $('#setResetBtn');
+
+    tutorial       = $('#tutorial');
+    tutorialSpot   = $('#tutorialSpot');
+    tutorialCard   = $('#tutorialCard');
+    tutorialStep   = $('#tutorialStep');
+    tutorialTotal  = $('#tutorialTotal');
+    tutorialTitle  = $('#tutorialTitle');
+    tutorialBody   = $('#tutorialBody');
+    tutorialSkip   = $('#tutorialSkip');
+    tutorialNext   = $('#tutorialNext');
+
+    longPressRing  = $('#longPressRing');
+
+    splashEl        = $('#splash');
+    splashFill      = $('#splashFill');
+    splashHint      = $('#splashHint');
+    splashParticles = $('#splashParticles');
   }
 
   function attachHandlers() {
@@ -747,54 +1476,56 @@
     boardEl.addEventListener('pointerup',   onPointerUp);
     boardEl.addEventListener('pointercancel', onPointerUp);
 
-    // Keyboard: allow Escape to deselect
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        selectedCell = null;
-        activeOrderIdx = -1;
-        highlightSelection();
-        renderOrders();
+        selectedCell = null; activeOrderIdx = -1;
+        highlightSelection(); renderOrders();
         setStatus('Selection cleared.');
+      } else if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault(); undo();
       }
     });
 
-    crateBtn.addEventListener('click', () => openCrate(false));
-    freeCrateBtn.addEventListener('click', () => {
-      if (Date.now() >= state.nextFreeCrate) openCrate(true);
-    });
+    crateBtn.addEventListener('click', () => { AudioFX.resume(); AudioFX.click(); openCrate(false); });
+    freeCrateBtn.addEventListener('click', () => { AudioFX.click(); if (Date.now() >= state.nextFreeCrate) openCrate(true); });
 
-    bookBtn.addEventListener('click', () => {
-      renderBook();
-      bookModal.classList.add('is-open');
-      bookModal.setAttribute('aria-hidden', 'false');
-    });
-    bookClose.addEventListener('click', () => {
-      bookModal.classList.remove('is-open');
-      bookModal.setAttribute('aria-hidden', 'true');
-    });
+    bookBtn.addEventListener('click', () => { AudioFX.click(); renderBook(); openModal(bookModal); });
+    bookClose.addEventListener('click', () => { AudioFX.click(); closeModal(bookModal); });
 
-    // Close modals when clicking backdrop
-    [bookModal, crateModal].forEach(m => {
-      m.addEventListener('click', (e) => {
-        if (e.target === m) {
-          m.classList.remove('is-open');
-          m.setAttribute('aria-hidden', 'true');
-        }
-      });
+    settingsBtn.addEventListener('click', () => { AudioFX.click(); openModal(settingsModal); });
+    settingsClose.addEventListener('click', () => { AudioFX.click(); closeModal(settingsModal); });
+
+    achievementsBtn.addEventListener('click', () => { AudioFX.click(); renderAchievements(); openModal(achievementsModal); });
+    achievementsClose.addEventListener('click', () => { AudioFX.click(); closeModal(achievementsModal); });
+
+    undoBtn.addEventListener('click', () => { AudioFX.click(); undo(); });
+
+    [bookModal, crateModal, settingsModal, achievementsModal].forEach(m => {
+      m.addEventListener('click', (e) => { if (e.target === m) closeModal(m); });
     });
 
     $('#startBtn').addEventListener('click', () => {
+      AudioFX.click();
+      AudioFX.resume();
       const title = $('#titleScreen');
       title.classList.add('is-gone');
       $('#app').setAttribute('aria-hidden', 'false');
-      // Start music/mood-ish? None here (audio not autoplayable safely).
+      if (state.settings.music) AudioFX.startMusic();
+      // Show tutorial on first play
+      if (!state.settings.tutorialDone) {
+        setTimeout(() => Tutorial.run(), 600);
+      }
     });
+
+    wireSettings();
+    wireTutorial();
   }
 
   function boot() {
+    grabDom();
     const loaded = loadState();
+    state.stats.sessions = (state.stats.sessions || 0) + 1;
     if (!loaded) seedInitialBoard();
-    // Re-hydrate ids
     for (let r = 0; r < BOARD_ROWS; r++)
       for (let c = 0; c < BOARD_COLS; c++)
         if (state.board[r][c] && !state.board[r][c].id) state.board[r][c].id = tileIdSeq++;
@@ -804,13 +1535,19 @@
     updateHUD();
     renderBook();
     updateFreeCrateBtn();
+    setInterval(updateFreeCrateBtn, 1000);
     spawnAmbientParticles();
     rotateChefLines();
+    applySettings();
     attachHandlers();
-
-    // First hint about controls
     setStatus('Tap or drag two matching ingredients to merge.');
+
+    runSplash(() => {
+      // Daily gift after splash so it feels rewarding
+      checkDailyReward();
+    });
   }
 
-  boot();
+  document.addEventListener('DOMContentLoaded', boot);
+  if (document.readyState !== 'loading') boot();
 })();
