@@ -2,7 +2,7 @@
 
 Each block below is a **standalone prompt** you can paste into any image generator (Midjourney, Gemini, DALL·E, Flux, Firefly). The master style anchor is embedded in every prompt so the whole set stays visually consistent. Save the outputs into `assets/` using the suggested filenames — the game code is structured to swap SVGs for these PNGs directly.
 
-Every entry lists both **Size** (pixels) and **Aspect ratio** (for generators that take a ratio flag, e.g. Midjourney `--ar 3:4`).
+Every entry uses one of the **5 supported aspect ratios**: `1:1`, `3:4`, `9:16`, `16:9`, `4:3`. Nothing else appears in this document, so you can paste any prompt straight into your generator and pick the ratio it lists.
 
 ## 0 · Master style anchor
 
@@ -19,14 +19,18 @@ Do **not** modify this — it's already baked into every prompt below.
 5. **Spice Crate art** (§7.2, §7.3) — the loot-box moment
 6. **UI ornaments + zellige pattern** (§5, §7, §8)
 
+## Composition note for wide banners
+
+A few assets are conceptually horizontal strips (dividers, silhouettes, mascot sheet, order frame). Since only 16:9 is available among the wide ratios, those prompts say **"compose the illustration inside a centered horizontal band, with transparent margins above and below"** — so you can generate at 16:9 and crop cleanly to the intended proportion.
+
 ---
 
 ## 1 · Splash screen
 
 ### 1.1 — Full-bleed splash illustration (landscape)
 - **File:** `assets/splash-hero.jpg`
-- **Size:** 2560×1600
-- **Aspect ratio:** 16:10 (also acceptable: 16:9)
+- **Size:** 2560×1440
+- **Aspect ratio:** 16:9
 - **Prompt:**
 > Wide cinematic hero illustration for a mobile game splash screen: a bustling Moroccan medina at magic hour, viewed from a slightly elevated angle. Left side shows a colorful souk alley — pyramid mounds of saffron, turmeric, paprika, and cumin spices arranged in front of a spice merchant's stall, embroidered rugs draped, brass mint-tea pots stacked, ripe oranges in a wicker basket. Middle-right shows an ornate riad courtyard with intricate zellige tile floor patterns in majorelle blue and teal, a horseshoe-arched doorway framed with muqarnas carving, low cushioned seating with velvet pillows in jewel tones, and a small orange tree. Two intricate brass Moroccan lanterns hang from the top corners casting warm golden pools of light. In the far background: layered Marrakech rooftops fading into a coral-and-amber sunset sky, silhouette of a minaret backlit by the sun. In the center-right foreground: a friendly Moroccan chef in a white tunic and red fez presents a steaming clay tagine on a copper tray, with a family of three delighted customers seated on the cushions. Above them a soft speech bubble contains "DELICIOUS!" in playful lettering. In the lower-right corner: an ornate wooden treasure chest bursting open with colorful spice pouches and a "SPICE CRATES" banner. Rich Bande Dessinée environmental detail density, appetizing warmth, warm atmospheric golden-hour haze with faint spice dust floating in the light shafts, Netflix-animation clean lines, high polish, painterly. Composition leaves a dark warm slot at bottom-center for a logo overlay.
 
@@ -39,8 +43,8 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 1.3 — Splash background only (no scene, for logo overlay)
 - **File:** `assets/splash-bg.jpg`
-- **Size:** 2560×1600
-- **Aspect ratio:** 16:10
+- **Size:** 2560×1440
+- **Aspect ratio:** 16:9
 - **Prompt:**
 > Textured warm gradient background: golden-hour sky transitioning from soft cream ivory at the top through saffron and coral to deep terracotta and burgundy at the bottom. A subtle soft warm sun glow bloom in the upper center. Faint zellige diamond pattern overlay at very low opacity throughout. Delicate floating warm spice-dust motes catching the light. Painterly, cinematic, no text, no characters, no architecture — pure atmosphere ready for a logo overlay in the center.
 
@@ -48,16 +52,23 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ## 2 · Logo & brand
 
-### 2.1 — Primary wordmark logo
+### 2.1 — Primary wordmark logo (wide banner)
 - **File:** `assets/logo-bniiine.png` (also request an SVG)
-- **Size:** 2400×900px, transparent background
-- **Aspect ratio:** 8:3 (roughly 21:9)
+- **Size:** 2400×1350, transparent background
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> Custom hand-lettered wordmark for the word **"Bniiine"** in a warm, rounded, cheerful serif with subtle Arabic-Kufic-inspired flourishes on the strokes. Letters carved from burnished copper and rose gold with tiny zellige tile inlays on the counters. Small saffron sparkle over the second "i" dot. Soft golden-hour drop shadow. Below the wordmark: elegant subtitle **"The Ultimate North African Culinary Empire"** in refined uppercase widely-spaced letters. Transparent background. Polished mobile game logo, Netflix-animation clean lines meets Bande Dessinée. Vibrant, appetizing, premium.
+> Custom hand-lettered wordmark for the word **"Bniiine"** in a warm, rounded, cheerful serif with subtle Arabic-Kufic-inspired flourishes on the strokes. Letters carved from burnished copper and rose gold with tiny zellige tile inlays on the counters. Small saffron sparkle over the second "i" dot. Soft golden-hour drop shadow. Below the wordmark: elegant subtitle **"The Ultimate North African Culinary Empire"** in refined uppercase widely-spaced letters. **Compose the entire logo inside a centered horizontal band that spans the full width but occupies only the middle third vertically; the top third and bottom third must be fully transparent so the logo can be cropped down to a wide banner.** Transparent background. Polished mobile game logo, Netflix-animation clean lines meets Bande Dessinée. Vibrant, appetizing, premium.
 
-### 2.2 — App icon / rounded tile
+### 2.2 — Wordmark logo (square version, alternate)
+- **File:** `assets/logo-bniiine-square.png`
+- **Size:** 2048×2048, transparent background
+- **Aspect ratio:** 1:1
+- **Prompt:**
+> Same "Bniiine" wordmark as 2.1 (warm rounded serif with copper-and-rose-gold letters, zellige inlays, subtitle "The Ultimate North African Culinary Empire" underneath), but composed for a square canvas: wordmark on top with the subtitle centered below, an ornate arabesque flourish or eight-pointed zellige star medallion filling the space above the wordmark. Transparent background.
+
+### 2.3 — App icon / rounded tile
 - **File:** `assets/icon-app-1024.png`
-- **Size:** 1024×1024, no transparency, rounded corners baked in
+- **Size:** 1024×1024
 - **Aspect ratio:** 1:1
 - **Prompt:**
 > Mobile game app icon, 1024×1024, rounded square. A single stylized tagine pot (cone-lid earthenware) glowing from within with warm saffron light, sitting on a small zellige-tile mosaic base of majorelle blue and teal. A wisp of steam curls upward forming a subtle "B" shape. Warm terracotta-and-gold radial background with an eight-point Moroccan star silhouette. Bold, punchy, readable at 60px. Vibrant Netflix-animation meets Bande Dessinée style.
@@ -68,24 +79,24 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 3.1 — Mascot hero pose (main mascot art)
 - **File:** `assets/mascot-karim-hero.png`
-- **Size:** 1600×2000, transparent PNG
-- **Aspect ratio:** 4:5
+- **Size:** 1500×2000, transparent PNG
+- **Aspect ratio:** 3:4
 - **Prompt:**
-> Full-body 2D character illustration of a friendly middle-aged Moroccan chef named **Karim**: warm brown skin, kind almond eyes, neatly trimmed grey-and-black beard, laugh lines. He wears a crisp white chef's tunic with terracotta piping and a small **red fez cap** with a black tassel. In his hands he presents a steaming ceramic tagine pot with a proud smile. A colorful embroidered apron with subtle Berber patterns wraps his waist. Slight three-quarter view, welcoming pose, feet grounded. Warm rim light from the upper left, soft ambient occlusion. Clean expressive linework, no outline overload. Transparent background.
+> Full-body 2D character illustration of a friendly middle-aged Moroccan chef named **Karim**: warm brown skin, kind almond eyes, neatly trimmed grey-and-black beard, laugh lines. He wears a crisp white chef's tunic with terracotta piping and a small **red fez cap** with a black tassel. In his hands he presents a steaming ceramic tagine pot with a proud smile. A colorful embroidered apron with subtle Berber patterns wraps his waist. Slight three-quarter view, welcoming pose, feet grounded. Warm rim light from the upper left, soft ambient occlusion. Clean expressive linework, no outline overload. Transparent background. Full body fits vertically inside the frame with balanced headroom and footroom.
 
-### 3.2 — Mascot expression sheet
+### 3.2 — Mascot expression sheet (2×2 grid)
 - **File:** `assets/mascot-karim-expressions.png`
-- **Size:** 2400×800, transparent PNG, 4 head-and-shoulder busts in a row
-- **Aspect ratio:** 3:1
+- **Size:** 2048×2048, transparent PNG
+- **Aspect ratio:** 1:1
 - **Prompt:**
-> Character expression sheet for Chef Karim (Moroccan chef, white tunic, red fez): four head-and-shoulder portraits in a horizontal row, transparent background between. **(1) Warm greeting** — eyes half-closed, big smile, one hand raised in salaam; **(2) Delighted** — eyes wide with joy, hands clasped, mouth open in "Delicious!"; **(3) Thoughtful** — one hand stroking beard, gentle raised eyebrow; **(4) Cooking** — determined focus, sleeves rolled, wiping brow with a cloth. Consistent character design across all four. Clean linework, warm golden-hour lighting.
+> Character expression sheet for Chef Karim (Moroccan chef, white tunic, red fez): four head-and-shoulder portraits laid out in a **2×2 grid** on a transparent background, one per quadrant. **Top-left — Warm greeting** — eyes half-closed, big smile, one hand raised in salaam. **Top-right — Delighted** — eyes wide with joy, hands clasped, mouth open in "Delicious!". **Bottom-left — Thoughtful** — one hand stroking beard, gentle raised eyebrow. **Bottom-right — Cooking** — determined focus, sleeves rolled, wiping brow with a cloth. Consistent character design across all four. Clean linework, warm golden-hour lighting.
 
-### 3.3 — Customer characters (recommended)
+### 3.3 — Customer characters
 - **File:** `assets/customers-sheet.png`
-- **Size:** 2400×1200, transparent PNG, 3 characters side by side
-- **Aspect ratio:** 2:1
+- **Size:** 2400×1350, transparent PNG
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> Three friendly Moroccan / Tunisian customer characters, full-body cartoony but grounded, transparent background: **(1) Older grandmother** in a colorful teal-and-gold caftan and headscarf, holding a small clay teapot, warm smile; **(2) Young man** in modern casual clothes over a djellaba, curious expression, phone in one hand; **(3) Traveling merchant** with rolled fabrics slung over shoulder, gold earring, hearty laugh. Diverse ages, all with warm brown skin tones and expressive kind faces. Cohesive with Chef Karim's style.
+> Three friendly Moroccan / Tunisian customer characters, full-body cartoony but grounded, arranged in a horizontal row on a transparent background: **(1) Older grandmother** in a colorful teal-and-gold caftan and headscarf, holding a small clay teapot, warm smile; **(2) Young man** in modern casual clothes over a djellaba, curious expression, phone in one hand; **(3) Traveling merchant** with rolled fabrics slung over shoulder, gold earring, hearty laugh. Diverse ages, all with warm brown skin tones and expressive kind faces. Cohesive with Chef Karim's style. Each character stands with a small shadow beneath. Space between characters equal.
 
 ---
 
@@ -93,8 +104,8 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 4.1a — Main game background (desktop / landscape)
 - **File:** `assets/bg-medina-desktop.jpg`
-- **Size:** 2560×1600
-- **Aspect ratio:** 16:10
+- **Size:** 2560×1440
+- **Aspect ratio:** 16:9
 - **Prompt:**
 > Cinematic Moroccan medina courtyard at golden hour, viewed slightly from above. Warm terracotta walls with intricate carved stucco, layered rooftops of Marrakech fading into a coral-and-amber sunset sky. Palm fronds silhouetted on the left. A distant minaret backlit by the sun. Foreground shows the corner of a lush riad courtyard with jewel-toned zellige tile floor patterns (majorelle blue, teal, saffron). Two ornate brass lanterns glow softly in the upper corners casting warm light. Empty middle area (composition leaves room for a game board overlay to sit centered). Rich Bande Dessinée environmental storytelling, appetizing warmth, atmospheric haze, painterly.
 
@@ -105,24 +116,24 @@ Do **not** modify this — it's already baked into every prompt below.
 - **Prompt:**
 > Vertical restaging of the Moroccan medina courtyard scene above (see 4.1a). Composition adjusted for portrait: sunset sky + minaret in the top third, lantern glows in the upper corners, riad archway and zellige tile floor in the middle-lower third, palm fronds curling in from the bottom-left. Empty vertical centerline reserved for a game board overlay. Same palette and light as the desktop version.
 
-### 4.2 — Title screen backdrop
+### 4.2 — Title screen backdrop (landscape)
 - **File:** `assets/bg-title-hero.jpg`
-- **Size:** 2560×1600
-- **Aspect ratio:** 16:10
+- **Size:** 2560×1440
+- **Aspect ratio:** 16:9
 - **Prompt:**
 > Dramatic wide establishing shot of a bustling North African souk at magic hour: winding alley lined with pyramid mounds of colorful spices (crimson, saffron, ochre, paprika), hanging brass lamps, embroidered rugs, terracotta pottery stalls, and in the distance a sunlit ochre riad archway. A shaft of golden light beams through the alley catching floating spice dust. Silhouettes of shopkeepers arranging goods. Zellige tile detail visible on lower walls. Cinematic composition with a dark warm foreground and glowing midground focal point.
 
 ### 4.3 — Riad kitchen (chef backdrop)
 - **File:** `assets/bg-riad-kitchen.jpg`
-- **Size:** 1600×2000 (portrait)
-- **Aspect ratio:** 4:5
+- **Size:** 1500×2000
+- **Aspect ratio:** 3:4
 - **Prompt:**
 > Interior view of a traditional Moroccan riad courtyard converted into a kitchen. Ornate horseshoe archway framing the scene, walls of intricate zellige mosaic in majorelle blue, teal, and saffron. A carved cedar-wood counter with clay tagines, brass mint-tea pots, and bowls of couscous. Overhead: a filigreed brass chandelier lantern casting golden lace-patterns on the tiled floor. Small orange tree in a decorated pot to one side. Warm golden-hour light streaming through carved wooden latticework. Painterly, warm, welcoming, no people.
 
 ### 4.4 — Souk stall backdrop (orders panel)
 - **File:** `assets/bg-souk-stall.jpg`
-- **Size:** 1200×1800 (portrait)
-- **Aspect ratio:** 2:3
+- **Size:** 1500×2000
+- **Aspect ratio:** 3:4
 - **Prompt:**
 > Cozy market stall interior view: three tall pyramid mounds of colorful spices in the foreground (turmeric yellow, harissa red, cumin brown), woven baskets of dates and dried figs behind them, strings of dried peppers hanging above, all lit by a warm hanging brass lantern. Wall behind is carved terracotta plaster with a small niche holding a mint-tea pot. Rich texture density, appetizing, jewel tones on the spices, warm golden ambience.
 
@@ -139,10 +150,10 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 5.2 — Medina silhouette skyline strip
 - **File:** `assets/silhouette-medina.png`
-- **Size:** 3200×600, transparent PNG, silhouette only
-- **Aspect ratio:** 16:3 (very wide banner)
+- **Size:** 2400×1350, transparent PNG
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> Long horizontal silhouette of a Moroccan medina skyline — tightly packed flat-roofed buildings, several minarets, small domes, palm trees, satellite dishes, and a distant kasbah. Pure dark warm-brown silhouette on transparent background, no gradients or details inside the shapes. Layered depth in three subtle shades. Composition designed to sit at the bottom of a game screen.
+> Long horizontal silhouette of a Moroccan medina skyline — tightly packed flat-roofed buildings, several minarets, small domes, palm trees, satellite dishes, and a distant kasbah. Pure dark warm-brown silhouette on transparent background, no gradients or details inside the shapes. Layered depth in three subtle shades. **Compose the entire silhouette inside the bottom third of the frame; the top two-thirds must be fully transparent so the strip can be cropped down to a thin banner.**
 
 ---
 
@@ -245,24 +256,24 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 7.6 — Ornate lantern
 - **File:** `assets/ui-lantern.png`
-- **Size:** 800×1400, transparent
-- **Aspect ratio:** 4:7 (portrait; 9:16 works if 4:7 is unsupported)
+- **Size:** 810×1440, transparent
+- **Aspect ratio:** 9:16
 - **Prompt:**
-> An intricately pierced brass Moroccan lantern hanging from a short chain, hexagonal body with cutout arabesque patterns projecting a warm honey glow, small colored glass panels (amber, emerald, sapphire), decorative finial on top. Warm inner light spilling out.
+> An intricately pierced brass Moroccan lantern hanging from a short chain at the top of the frame, hexagonal body with cutout arabesque patterns projecting a warm honey glow, small colored glass panels (amber, emerald, sapphire), decorative finial on top. Warm inner light spilling out. Lantern occupies the vertical center; chain reaches up to the top edge.
 
 ### 7.7 — Order card ornament frame
 - **File:** `assets/ui-order-frame.png`
-- **Size:** 1200×400, transparent
-- **Aspect ratio:** 3:1
+- **Size:** 2400×1350, transparent
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> An ornate horizontal frame border for an order card. Warm cream parchment center panel bordered by intricate arabesque scrollwork ribbon in copper and majorelle blue, tiny zellige star medallions in the corners, small mint sprig decoration at the top center. Ready to overlay text on the parchment center.
+> An ornate horizontal frame border for an order card. Warm cream parchment center panel bordered by intricate arabesque scrollwork ribbon in copper and majorelle blue, tiny zellige star medallions in the corners, small mint sprig decoration at the top center. Ready to overlay text on the parchment center. **Compose the entire frame inside a centered horizontal band that occupies only the middle third of the canvas vertically; the top and bottom thirds are fully transparent so the frame can be cropped down to a wider thin card.**
 
 ### 7.8 — Primary button ornament
 - **File:** `assets/ui-button-ornament.png`
-- **Size:** 1200×300, transparent
-- **Aspect ratio:** 4:1
+- **Size:** 2400×1350, transparent
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> A pill-shaped button design in warm terracotta gradient with a burnished-gold border and small arabesque flourish caps on left and right ends, subtle inner glow, ready for overlay text. Central area kept flat and readable.
+> A pill-shaped button design in warm terracotta gradient with a burnished-gold border and small arabesque flourish caps on left and right ends, subtle inner glow, ready for overlay text. Central area kept flat and readable. **Compose the button inside a centered horizontal band occupying only the middle third vertically; top and bottom thirds fully transparent so the button can be cropped down to a pill.**
 
 ### 7.9 — Settings gear
 - **File:** `assets/ui-gear.png`
@@ -284,22 +295,22 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ### 8.1 — Arabesque divider (horizontal)
 - **File:** `assets/ornament-divider.png`
-- **Size:** 1600×200, transparent
-- **Aspect ratio:** 8:1
+- **Size:** 2400×1350, transparent
+- **Aspect ratio:** 16:9
 - **Prompt:**
-> Elegant horizontal ornament: two symmetrical scrolling arabesque vines meeting at a central eight-pointed star medallion in copper and gold, flanked by tapering paisley flourishes. Delicate, refined, publication-quality linework. Transparent background.
+> Elegant horizontal ornament: two symmetrical scrolling arabesque vines meeting at a central eight-pointed star medallion in copper and gold, flanked by tapering paisley flourishes. Delicate, refined, publication-quality linework. Transparent background. **Compose the entire ornament inside a centered horizontal band that occupies only the middle 15% of the canvas vertically; the rest of the canvas is fully transparent so the divider can be cropped down to a slim strip.**
 
 ### 8.2 — Moroccan arch frame
 - **File:** `assets/ornament-arch-frame.png`
-- **Size:** 1200×1600, transparent
+- **Size:** 1500×2000, transparent
 - **Aspect ratio:** 3:4
 - **Prompt:**
 > A tall keyhole-shaped Moroccan horseshoe arch outline with detailed muqarnas (stalactite) carving in the crown, columns with zellige tile inlay bases, warm cream stucco color with copper highlights. Interior kept transparent so game content can be framed inside.
 
 ### 8.3 — Steam wisps (transparent overlay)
 - **File:** `assets/fx-steam.png`
-- **Size:** 800×1200, transparent
-- **Aspect ratio:** 2:3
+- **Size:** 1500×2000, transparent
+- **Aspect ratio:** 3:4
 - **Prompt:**
 > A soft translucent column of curling steam rising and dispersing at the top, painted with subtle warm-cream and pale-gold highlights suggesting golden-hour light through vapor. Semi-transparent, ready to composite over dishes.
 
@@ -319,24 +330,19 @@ Do **not** modify this — it's already baked into every prompt below.
 
 ---
 
-## Aspect-ratio cheat sheet by generator
+## Ratio quick reference — only these 5 exist in this doc
 
-| Ratio | Midjourney flag | Approx use |
-|-------|-----------------|------------|
-| 1:1   | `--ar 1:1`      | All ingredient icons, coin, gear, trophy, crate, book, sparkle, zellige tile, palm, confetti |
-| 4:5   | `--ar 4:5`      | Mascot hero pose, riad kitchen backdrop |
-| 2:3   | `--ar 2:3`      | Souk stall backdrop, steam wisps |
-| 3:4   | `--ar 3:4`      | Moroccan arch frame |
-| 9:16  | `--ar 9:16`     | Splash portrait, medina portrait backdrop, lantern (fallback) |
-| 4:7   | (use 9:16)      | Lantern preferred; most tools round to 9:16 |
-| 16:10 | `--ar 16:10`    | Splash landscape, splash background, medina desktop, title backdrop |
-| 16:9  | `--ar 16:9`     | Acceptable substitute for any 16:10 above |
-| 2:1   | `--ar 2:1`      | Customers sheet |
-| 3:1   | `--ar 3:1`      | Mascot expression sheet, order-card frame |
-| 4:1   | `--ar 4:1`      | Primary button ornament |
-| 8:1   | (use 4:1×2)     | Arabesque divider — most tools cap at 4:1, tile two halves |
-| 8:3   | (use 21:9)      | Wordmark logo — most tools accept 21:9 |
-| 16:3  | (use 4:1×4)     | Medina silhouette strip — generate in 4 sections |
+| Ratio | Use in this doc | Midjourney flag |
+|-------|-----------------|-----------------|
+| **1:1**  | All ingredient icons, all UI icons, zellige tile, palm fronds, confetti sheet, square logo, expression sheet, app icon | `--ar 1:1` |
+| **3:4**  | Mascot hero pose, riad kitchen backdrop, souk stall backdrop, arch frame, steam wisps | `--ar 3:4` |
+| **9:16** | Splash portrait, medina portrait backdrop, lantern | `--ar 9:16` |
+| **16:9** | Splash landscape, splash background, wordmark logo (wide), title backdrop, medina desktop backdrop, customer sheet, medina silhouette strip, order-card frame, button ornament, arabesque divider | `--ar 16:9` |
+| **4:3**  | *(reserved — not used yet; available if you need a slightly-less-wide backdrop variant)* | `--ar 4:3` |
+
+## Cropping the "wide-banner" 16:9 assets
+
+The wordmark logo (2.1), medina silhouette (5.2), order frame (7.7), button ornament (7.8), and arabesque divider (8.1) are conceptually wider than 16:9. Every prompt for these places the artwork inside a **centered horizontal band with transparent margins above and below**, so after generation you can crop to the final ratio you need (e.g. 8:3, 4:1, 16:3) without redoing the illustration.
 
 ## Once you have the PNGs
 
