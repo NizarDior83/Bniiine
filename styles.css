@@ -242,17 +242,32 @@ button:disabled {
   background-color: #2B1810;
   background-image:
     linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.55) 100%),
-    url('assets/bg-title-hero.jpg');
+    image-set(url('assets/bg-title-hero.webp') type('image/webp'), url('assets/bg-title-hero.jpg') type('image/jpeg'));
   background-size: cover;
   background-position: center;
   transition: opacity 500ms var(--ease-soft), visibility 500ms;
+}
+
+@supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+  .title {
+    background-image:
+      linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.55) 100%),
+      url('assets/bg-title-hero.jpg');
+  }
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
   .title {
     background-image:
       linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.6) 100%),
-      url('assets/splash-hero-portrait.jpg');
+      image-set(url('assets/splash-hero-portrait.webp') type('image/webp'), url('assets/splash-hero-portrait.jpg') type('image/jpeg'));
+  }
+  @supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+    .title {
+      background-image:
+        linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.6) 100%),
+        url('assets/splash-hero-portrait.jpg');
+    }
   }
 }
 
@@ -296,15 +311,38 @@ button:disabled {
 .title__ornament--top { margin-bottom: var(--s-3); }
 .title__ornament--bot { margin-top: var(--s-4); }
 
-.title__logo-img {
+.title__logo-pic {
   display: block;
   width: 100%;
   max-width: 520px;
-  height: auto;
   margin: 0 auto var(--s-1);
-  filter: drop-shadow(0 8px 16px rgba(43, 24, 16, 0.35));
   animation: titleLogoIn 900ms var(--ease-back) both;
 }
+
+.title__logo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(43, 24, 16, 0.35));
+}
+
+.title__logo-fallback {
+  display: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(56px, 12vw, 96px);
+  line-height: 1;
+  margin: 0 0 var(--s-1);
+  background: linear-gradient(180deg, var(--terracotta), var(--berry) 60%, var(--majorelle));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 0 rgba(255,255,255,0.35);
+}
+
+.title__logo-pic.is-fallback + .title__logo-fallback { display: block; }
+.title__logo-pic.is-fallback { display: none; }
 
 @keyframes titleLogoIn {
   from { opacity: 0; transform: translateY(-8px) scale(0.94); }
@@ -1259,7 +1297,7 @@ button:disabled {
   background-color: #2B1810;
   background-image:
     linear-gradient(180deg, rgba(43, 24, 16, 0) 55%, rgba(43, 24, 16, 0.55) 100%),
-    url('assets/splash-bg.jpg');
+    image-set(url('assets/splash-bg.webp') type('image/webp'), url('assets/splash-bg.jpg') type('image/jpeg'));
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -1267,12 +1305,28 @@ button:disabled {
   transition: opacity 800ms var(--ease-soft), visibility 800ms;
 }
 
+/* Fallback for browsers without image-set (older Safari) — a plain url() */
+@supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+  .splash {
+    background-image:
+      linear-gradient(180deg, rgba(43, 24, 16, 0) 55%, rgba(43, 24, 16, 0.55) 100%),
+      url('assets/splash-bg.jpg');
+  }
+}
+
 /* Portrait devices — swap to the chef-in-the-souk portrait scene */
 @media (orientation: portrait) and (max-width: 900px) {
   .splash {
     background-image:
       linear-gradient(180deg, rgba(43, 24, 16, 0) 45%, rgba(43, 24, 16, 0.55) 100%),
-      url('assets/splash-hero-portrait.jpg');
+      image-set(url('assets/splash-hero-portrait.webp') type('image/webp'), url('assets/splash-hero-portrait.jpg') type('image/jpeg'));
+  }
+  @supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+    .splash {
+      background-image:
+        linear-gradient(180deg, rgba(43, 24, 16, 0) 45%, rgba(43, 24, 16, 0.55) 100%),
+        url('assets/splash-hero-portrait.jpg');
+    }
   }
 }
 
@@ -1319,17 +1373,41 @@ button:disabled {
   100% { transform: translate(60px, -20vh) scale(1.2); opacity: 0; }
 }
 
-.splash__logo,
-.splash__logo-img {
+.splash__logo-pic {
   position: relative;
+  display: block;
   max-width: min(720px, 92vw);
   width: 100%;
-  height: auto;
-  filter: drop-shadow(0 12px 24px rgba(43, 24, 16, 0.55));
   animation: splashLogoIn 1200ms var(--ease-back) both;
 }
 
-/* Legacy text logo kept for a11y fallback */
+.splash__logo,
+.splash__logo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 12px 24px rgba(43, 24, 16, 0.55));
+}
+
+/* Text fallback shown when the <img> fails to load */
+.splash__logo-fallback {
+  display: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(64px, 15vw, 130px);
+  line-height: 1;
+  background: linear-gradient(180deg, #FFEBA1, #E8A62B 40%, #C4622D 80%, #7A1E28);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+  text-shadow: 0 6px 0 rgba(43, 24, 16, 0.35);
+}
+
+.splash__logo-pic.is-fallback + .splash__logo-fallback { display: block; }
+.splash__logo-pic.is-fallback { display: none; }
+
+/* Legacy CSS-text logo class kept for a11y fallback if used elsewhere */
 .splash__logo {
   font-family: var(--font-display);
   font-weight: 700;
