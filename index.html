@@ -383,43 +383,10 @@
       <aside class="chef" aria-label="Chef">
         <div class="bubble" id="bubble">Ahlan! Merge the cumin to make ras el hanout.</div>
         <div class="chef__figure" id="chefFigure" aria-hidden="true">
-          <svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid meet">
-            <ellipse cx="100" cy="245" rx="80" ry="8" fill="#3D0A11" opacity="0.35"/>
-            <!-- body -->
-            <path d="M40 240 L50 130 Q100 100 150 130 L160 240 Z" fill="#F5E6C8"/>
-            <path d="M55 130 Q100 110 145 130 L145 145 Q100 130 55 145 Z" fill="#C4622D"/>
-            <!-- left arm (waving arm) -->
-            <g class="chef-arm chef-arm-l">
-              <path d="M40 240 L28 160 Q34 138 50 140" fill="#F5E6C8" stroke="#3D0A11" stroke-width="0.5"/>
-            </g>
-            <!-- right arm (wipes brow / cheers) -->
-            <g class="chef-arm chef-arm-r">
-              <path d="M160 240 L172 160 Q166 138 150 140" fill="#F5E6C8" stroke="#3D0A11" stroke-width="0.5"/>
-            </g>
-            <!-- head + face -->
-            <g class="chef-head" id="chefHead">
-              <ellipse cx="100" cy="80" rx="28" ry="32" fill="#D3A574"/>
-              <!-- beard -->
-              <path d="M78 90 Q100 118 122 90 Q120 108 100 118 Q80 108 78 90 Z" fill="#F5E6C8"/>
-              <!-- eyes (translated by JS for tracking, blinked via CSS) -->
-              <g class="chef-eyes" id="chefEyes">
-                <ellipse class="chef-eye" cx="90"  cy="76" rx="2.5" ry="2.5" fill="#3D0A11"/>
-                <ellipse class="chef-eye" cx="110" cy="76" rx="2.5" ry="2.5" fill="#3D0A11"/>
-              </g>
-              <!-- mouth (swaps shape on cheer) -->
-              <g class="chef-mouth" id="chefMouth">
-                <path class="chef-mouth-smile" d="M92 88 Q100 92 108 88" stroke="#7A3413" stroke-width="2" fill="none" stroke-linecap="round"/>
-              </g>
-              <!-- fez -->
-              <path d="M72 60 Q100 20 128 60 Q128 46 100 40 Q72 46 72 60 Z" fill="#7A1E28"/>
-              <ellipse cx="100" cy="60" rx="30" ry="4" fill="#3D0A11"/>
-              <circle cx="100" cy="30" r="3" fill="#3D0A11"/>
-            </g>
-            <!-- tray / tagine -->
-            <ellipse cx="100" cy="200" rx="46" ry="6" fill="#7A3413"/>
-            <path d="M60 200 Q100 170 140 200 Z" fill="url(#g-clay)"/>
-            <circle cx="100" cy="180" r="3" fill="#3D0A11"/>
-          </svg>
+          <picture class="chef__face">
+            <source id="chefFaceSrc" srcset="assets/mascot-karim-idle.webp" type="image/webp" />
+            <img id="chefFaceImg" class="chef__face-img" src="assets/mascot-karim-idle.png" alt="" />
+          </picture>
         </div>
         <div class="chef__stalls" aria-hidden="true">
           <div class="stall stall--spice"></div>

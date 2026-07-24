@@ -137,10 +137,36 @@ button:disabled {
 .scene__sky {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 22%, rgba(255, 235, 161, 0.55), transparent 65%),
-    linear-gradient(180deg, #FFEBA1 0%, #F4B26A 18%, #E67A3E 42%, #8A2A1E 100%);
-  opacity: 0.9;
+  background-color: #E67A3E;
+  background-image:
+    linear-gradient(180deg, rgba(255, 235, 161, 0.25) 0%, rgba(43, 24, 16, 0.35) 100%),
+    image-set(url('assets/bg-medina-desktop.webp') type('image/webp'), url('assets/bg-medina-desktop.jpg') type('image/jpeg'));
+  background-size: cover;
+  background-position: center;
+  opacity: 0.95;
+}
+
+@supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+  .scene__sky {
+    background-image:
+      linear-gradient(180deg, rgba(255, 235, 161, 0.25) 0%, rgba(43, 24, 16, 0.35) 100%),
+      url('assets/bg-medina-desktop.jpg');
+  }
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .scene__sky {
+    background-image:
+      linear-gradient(180deg, rgba(255, 235, 161, 0.2) 0%, rgba(43, 24, 16, 0.4) 100%),
+      image-set(url('assets/bg-medina-portrait.webp') type('image/webp'), url('assets/bg-medina-portrait.jpg') type('image/jpeg'));
+  }
+  @supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+    .scene__sky {
+      background-image:
+        linear-gradient(180deg, rgba(255, 235, 161, 0.2) 0%, rgba(43, 24, 16, 0.4) 100%),
+        url('assets/bg-medina-portrait.jpg');
+    }
+  }
 }
 
 .scene__sun {
@@ -166,26 +192,35 @@ button:disabled {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 32vh;
-  min-height: 220px;
+  height: 22vh;
+  min-height: 140px;
+  pointer-events: none;
+  background-image: image-set(url('assets/silhouette-medina.webp') type('image/webp'), url('assets/silhouette-medina.png') type('image/png'));
+  background-size: contain;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  opacity: 0.9;
+  filter: drop-shadow(0 -4px 12px rgba(43, 24, 16, 0.4));
 }
 
-.scene__medina svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+@supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+  .scene__medina { background-image: url('assets/silhouette-medina.png'); }
 }
+
+.scene__medina svg { display: none; }
 
 .scene__zellige {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(45deg, rgba(28,78,128,0.08) 25%, transparent 25%, transparent 75%, rgba(28,78,128,0.08) 75%),
-    linear-gradient(45deg, rgba(232,166,43,0.06) 25%, transparent 25%, transparent 75%, rgba(232,166,43,0.06) 75%);
-  background-size: 60px 60px, 60px 60px;
-  background-position: 0 0, 30px 30px;
-  opacity: 0.35;
+  background-image: url('assets/pattern-zellige-seamless.webp');
+  background-size: 240px 240px;
+  background-repeat: repeat;
+  opacity: 0.12;
   mix-blend-mode: multiply;
+}
+
+@supports not (background-image: url('a.webp')) {
+  .scene__zellige { background-image: url('assets/pattern-zellige-seamless.jpg'); }
 }
 
 .scene__lantern {
@@ -945,9 +980,31 @@ button:disabled {
 
 .chef__figure {
   width: 100%;
-  max-width: 200px;
-  filter: drop-shadow(0 12px 8px rgba(43,24,16,0.35));
+  max-width: 220px;
+  filter: drop-shadow(0 14px 10px rgba(43,24,16,0.4));
   animation: chefBob 4s ease-in-out infinite;
+}
+
+.chef__face {
+  display: block;
+  width: 100%;
+}
+
+.chef__face-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 250ms var(--ease-back), filter 250ms;
+}
+
+.chef__figure.is-swap .chef__face-img {
+  animation: chefSwap 320ms var(--ease-back);
+}
+
+@keyframes chefSwap {
+  0%   { transform: scale(0.94); filter: brightness(0.9); }
+  50%  { transform: scale(1.05); filter: brightness(1.1); }
+  100% { transform: scale(1);    filter: brightness(1); }
 }
 
 @keyframes chefBob {

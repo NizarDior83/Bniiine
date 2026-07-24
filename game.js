@@ -457,17 +457,34 @@
   // CHEF LIFE — blink, eye tracking, wave, cheer, wipe, shrug
   // ==========================================================================
   const Chef = (function () {
-    let fig = null, eyes = null;
-    let blinkTimer = null;
+    let fig = null, faceImg = null, faceSrc = null;
     let idleTimer = null;
+    let holdTimer = null;
 
-    function scheduleBlink() {
-      clearTimeout(blinkTimer);
-      const next = 2200 + Math.random() * 2800;
-      blinkTimer = setTimeout(() => {
-        blink();
-        scheduleBlink();
-      }, next);
+    const FACES = {
+      idle:       'mascot-karim-idle',
+      cheer:      'mascot-karim-cheer',
+      wipe:       'mascot-karim-wipe',
+      thoughtful: 'mascot-karim-thoughtful',
+    };
+
+    // Preload all 4 face images so state changes are instant
+    Object.values(FACES).forEach(base => {
+      const w = new Image(); w.src = `assets/${base}.webp`;
+      const p = new Image(); p.src = `assets/${base}.png`;
+    });
+
+    function setFace(name, holdMs) {
+      if (!faceImg) return;
+      const base = FACES[name] || FACES.idle;
+      faceImg.src = `assets/${base}.png`;
+      if (faceSrc) faceSrc.srcset = `assets/${base}.webp`;
+      fig && fig.classList.add('is-swap');
+      setTimeout(() => fig && fig.classList.remove('is-swap'), 220);
+      clearTimeout(holdTimer);
+      if (holdMs && name !== 'idle') {
+        holdTimer = setTimeout(() => setFace('idle'), holdMs);
+      }
     }
 
     function scheduleIdle() {
@@ -475,72 +492,26 @@
       const next = 12000 + Math.random() * 10000;
       idleTimer = setTimeout(() => {
         if (Math.random() < 0.5) shrug();
-        else wave();
         scheduleIdle();
       }, next);
     }
 
-    function blink() {
-      if (!fig) return;
-      fig.classList.remove('is-blinking');
-      void fig.offsetWidth;
-      fig.classList.add('is-blinking');
-      setTimeout(() => fig.classList.remove('is-blinking'), 240);
-    }
-    function wave() {
-      if (!fig) return;
-      fig.classList.remove('is-waving');
-      void fig.offsetWidth;
-      fig.classList.add('is-waving');
-      setTimeout(() => fig.classList.remove('is-waving'), 940);
-    }
-    function cheer() {
-      if (!fig) return;
-      fig.classList.remove('is-cheering');
-      void fig.offsetWidth;
-      fig.classList.add('is-cheering');
-      setTimeout(() => fig.classList.remove('is-cheering'), 1050);
-    }
-    function wipe() {
-      if (!fig) return;
-      fig.classList.remove('is-wiping');
-      void fig.offsetWidth;
-      fig.classList.add('is-wiping');
-      setTimeout(() => fig.classList.remove('is-wiping'), 940);
-    }
-    function shrug() {
-      if (!fig) return;
-      fig.classList.remove('is-shrug');
-      void fig.offsetWidth;
-      fig.classList.add('is-shrug');
-      setTimeout(() => fig.classList.remove('is-shrug'), 1440);
-    }
-
-    function trackEyes(evt) {
-      if (!eyes || !fig) return;
-      const r = fig.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top  + r.height * 0.3;
-      let dx = (evt.clientX - cx) / (r.width / 2);
-      let dy = (evt.clientY - cy) / (r.height / 2);
-      dx = Math.max(-1, Math.min(1, dx));
-      dy = Math.max(-0.5, Math.min(0.8, dy));
-      eyes.style.transform = `translate(${dx * 2.2}px, ${dy * 1.6}px)`;
-    }
+    // Public API — same names as before so no other code changes
+    function blink() { /* covered by face-swap; no-op kept for callers */ }
+    function wave()  { /* the idle face already shows a warm wave; no-op */ }
+    function cheer() { setFace('cheer', 1600); }
+    function wipe()  { setFace('wipe',  1600); }
+    function shrug() { setFace('thoughtful', 1600); }
 
     function init() {
-      fig  = $('#chefFigure');
-      eyes = $('#chefEyes');
+      fig     = $('#chefFigure');
+      faceImg = $('#chefFaceImg');
+      faceSrc = $('#chefFaceSrc');
       if (!fig) return;
-      scheduleBlink();
       scheduleIdle();
-      document.addEventListener('pointermove', (e) => {
-        if (state.settings.motion) return;
-        trackEyes(e);
-      });
     }
 
-    return { init, blink, wave, cheer, wipe, shrug };
+    return { init, blink, wave, cheer, wipe, shrug, setFace };
   })();
 
   // ==========================================================================
