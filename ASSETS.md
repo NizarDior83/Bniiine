@@ -84,12 +84,27 @@ A few assets are conceptually horizontal strips (dividers, silhouettes, mascot s
 - **Prompt:**
 > Full-body 2D character illustration of a friendly middle-aged Moroccan chef named **Karim**: warm brown skin, kind almond eyes, neatly trimmed grey-and-black beard, laugh lines. He wears a crisp white chef's tunic with terracotta piping and a small **red fez cap** with a black tassel. In his hands he presents a steaming ceramic tagine pot with a proud smile. A colorful embroidered apron with subtle Berber patterns wraps his waist. Slight three-quarter view, welcoming pose, feet grounded. Warm rim light from the upper left, soft ambient occlusion. Clean expressive linework, no outline overload. Transparent background. Full body fits vertically inside the frame with balanced headroom and footroom.
 
-### 3.2 — Mascot expression sheet (2×2 grid)
-- **File:** `assets/mascot-karim-expressions.png`
-- **Size:** 2048×2048, transparent PNG
+### 3.2 — Mascot expressions (4 separate PNGs, not one grid sheet)
+
+**Deliver as 4 individual files, not a single grid sheet.** The game face-swaps them on events (idle default, chef reacts to a discovery, thoughtful during idle, wipes brow on legendary). Separate files keep the swap logic to a single `<img>` src change.
+
+Shared envelope for all 4:
+- **Size:** 1024×1024, transparent PNG
 - **Aspect ratio:** 1:1
-- **Prompt:**
-> Character expression sheet for Chef Karim (Moroccan chef, white tunic, red fez): four head-and-shoulder portraits laid out in a **2×2 grid** on a transparent background, one per quadrant. **Top-left — Warm greeting** — eyes half-closed, big smile, one hand raised in salaam. **Top-right — Delighted** — eyes wide with joy, hands clasped, mouth open in "Delicious!". **Bottom-left — Thoughtful** — one hand stroking beard, gentle raised eyebrow. **Bottom-right — Cooking** — determined focus, sleeves rolled, wiping brow with a cloth. Consistent character design across all four. Clean linework, warm golden-hour lighting.
+- **Framing:** head + shoulders + upper chest, centered, **identical crop and camera position across all 4** so the face swaps without shifting
+- **Character consistency:** same warm brown skin tone, same trimmed grey-and-black beard, same red fez with black tassel, same white chef's tunic with terracotta piping across all four
+
+**3.2a — `assets/mascot-karim-idle.png` — Warm smile (idle default)**
+> Chef Karim, head-and-shoulders portrait, transparent background. Warm gentle smile, eyes half-closed, relaxed brows, calm posture, one hand raised in a small salaam. This is the default face shown during play.
+
+**3.2b — `assets/mascot-karim-cheer.png` — Delighted (on discovery / legendary)**
+> Chef Karim, head-and-shoulders portrait, transparent background. Eyes wide with joy, eyebrows lifted, mouth open in a happy "oh!" of delight, both hands clasped or partly raised in celebration. Same crop and character as 3.2a.
+
+**3.2c — `assets/mascot-karim-thoughtful.png` — Thoughtful (idle shrug)**
+> Chef Karim, head-and-shoulders portrait, transparent background. One hand stroking his beard, one eyebrow gently raised, small pondering smile, gaze slightly off-camera. Same crop and character as 3.2a.
+
+**3.2d — `assets/mascot-karim-wipe.png` — Wiping brow (legendary tier-5 merge)**
+> Chef Karim, head-and-shoulders portrait, transparent background. Sleeves rolled up, determined focus, wiping his brow with a small cloth held in one hand, tiny drop of sweat, warm intense look. Same crop and character as 3.2a.
 
 ### 3.3 — Customer characters
 - **File:** `assets/customers-sheet.png`
