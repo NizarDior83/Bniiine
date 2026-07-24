@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi+Fun:wght@600;700&family=Cairo:wght@400;600;700;800;900&family=Amiri:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="assets/favicon.png" />
-  <link rel="apple-touch-icon" href="assets/logo-bniiine-square.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 </head>
 <body>
 
@@ -21,7 +21,11 @@
   <div class="splash" id="splash">
     <div class="splash__glow" aria-hidden="true"></div>
     <div class="splash__particles" id="splashParticles" aria-hidden="true"></div>
-    <img class="splash__logo-img" src="assets/logo-bniiine.png" alt="Bniiine — The Ultimate North African Culinary Empire" />
+    <picture class="splash__logo-pic">
+      <source srcset="assets/logo-bniiine.webp" type="image/webp" />
+      <img class="splash__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+    </picture>
+    <div class="splash__logo-fallback" aria-hidden="true">Bniiine</div>
     <div class="splash__arabic" lang="ar">بنين</div>
     <div class="splash__bar" aria-hidden="true"><div class="splash__fill" id="splashFill"></div></div>
     <div class="splash__hint" id="splashHint">Warming the tagine…</div>
@@ -413,7 +417,11 @@
        ============================================================ -->
   <div class="title" id="titleScreen" role="dialog" aria-labelledby="titleLogo" aria-modal="true">
     <div class="title__panel">
-      <img id="titleLogo" class="title__logo-img" src="assets/logo-bniiine.png" alt="Bniiine — The Ultimate North African Culinary Empire" />
+      <picture class="title__logo-pic">
+        <source srcset="assets/logo-bniiine.webp" type="image/webp" />
+        <img id="titleLogo" class="title__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+      </picture>
+      <div class="title__logo-fallback" aria-hidden="true">Bniiine</div>
       <p class="title__arabic" lang="ar">بنين</p>
       <p class="title__lede">Merge saffron, mint, and lamb from bustling souks and riad courtyards.<br/>Unlock <em>tagines</em>, <em>couscous royale</em>, and <em>pastilla</em>.<br/>Build your empire from Marrakech to Tunis.</p>
       <button class="title__cta" id="startBtn" type="button">
