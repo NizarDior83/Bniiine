@@ -144,6 +144,7 @@
     stats: { merges: 0, ordersDone: 0, coinsEarned: 0, sold: 0, undos: 0, sessions: 0, crateOpens: 0 },
     settings: { sfx: true, music: false, haptics: true, motion: false, hiContrast: false, tutorialDone: false },
     lastDailyClaim: null,
+    challenge: null,   // { day: 'YYYY-M-D', key, progress, done }
   };
 
   function makeEmptyBoard() {
@@ -170,6 +171,7 @@
         stats: state.stats,
         settings: state.settings,
         lastDailyClaim: state.lastDailyClaim,
+        challenge: state.challenge,
       }));
     } catch (_) {}
   }
@@ -388,6 +390,336 @@
   };
 
   // ==========================================================================
+  // COMBO — merges within 3s stack a multiplier
+  // ==========================================================================
+  const COMBO_WINDOW_MS = 3000;
+  const combo = { count: 0, timer: null };
+
+  function bumpCombo() {
+    combo.count += 1;
+    clearTimeout(combo.timer);
+    combo.timer = setTimeout(() => {
+      if (combo.count >= 2) showComboEnd(combo.count);
+      combo.count = 0;
+    }, COMBO_WINDOW_MS);
+    if (combo.count >= 2) {
+      showComboFlash(combo.count);
+      pulseBoard();
+    }
+  }
+
+  function comboMultiplier() {
+    if (combo.count >= 5) return 3;
+    if (combo.count >= 4) return 2.5;
+    if (combo.count >= 3) return 2;
+    if (combo.count >= 2) return 1.5;
+    return 1;
+  }
+
+  function showComboFlash(n) {
+    const el = document.createElement('div');
+    el.className = 'combo' + (n >= 4 ? ' combo--big' : '');
+    el.textContent = `COMBO ×${n}!`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+    if (n >= 4) AudioFX.legendary();
+    else AudioFX.merge(n);
+  }
+
+  function showComboEnd(n) {
+    if (n < 3) return;
+    const el = document.createElement('div');
+    el.className = 'combo combo--big';
+    el.textContent = `+${n} CHAIN!`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  function pulseBoard() {
+    const frame = document.querySelector('.board-frame');
+    if (!frame) return;
+    frame.classList.remove('is-combo');
+    void frame.offsetWidth;
+    frame.classList.add('is-combo');
+    setTimeout(() => frame.classList.remove('is-combo'), 900);
+  }
+
+  // ==========================================================================
+  // CHEF LIFE — blink, eye tracking, wave, cheer, wipe, shrug
+  // ==========================================================================
+  const Chef = (function () {
+    let fig = null, eyes = null;
+    let blinkTimer = null;
+    let idleTimer = null;
+
+    function scheduleBlink() {
+      clearTimeout(blinkTimer);
+      const next = 2200 + Math.random() * 2800;
+      blinkTimer = setTimeout(() => {
+        blink();
+        scheduleBlink();
+      }, next);
+    }
+
+    function scheduleIdle() {
+      clearTimeout(idleTimer);
+      const next = 12000 + Math.random() * 10000;
+      idleTimer = setTimeout(() => {
+        if (Math.random() < 0.5) shrug();
+        else wave();
+        scheduleIdle();
+      }, next);
+    }
+
+    function blink() {
+      if (!fig) return;
+      fig.classList.remove('is-blinking');
+      void fig.offsetWidth;
+      fig.classList.add('is-blinking');
+      setTimeout(() => fig.classList.remove('is-blinking'), 240);
+    }
+    function wave() {
+      if (!fig) return;
+      fig.classList.remove('is-waving');
+      void fig.offsetWidth;
+      fig.classList.add('is-waving');
+      setTimeout(() => fig.classList.remove('is-waving'), 940);
+    }
+    function cheer() {
+      if (!fig) return;
+      fig.classList.remove('is-cheering');
+      void fig.offsetWidth;
+      fig.classList.add('is-cheering');
+      setTimeout(() => fig.classList.remove('is-cheering'), 1050);
+    }
+    function wipe() {
+      if (!fig) return;
+      fig.classList.remove('is-wiping');
+      void fig.offsetWidth;
+      fig.classList.add('is-wiping');
+      setTimeout(() => fig.classList.remove('is-wiping'), 940);
+    }
+    function shrug() {
+      if (!fig) return;
+      fig.classList.remove('is-shrug');
+      void fig.offsetWidth;
+      fig.classList.add('is-shrug');
+      setTimeout(() => fig.classList.remove('is-shrug'), 1440);
+    }
+
+    function trackEyes(evt) {
+      if (!eyes || !fig) return;
+      const r = fig.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top  + r.height * 0.3;
+      let dx = (evt.clientX - cx) / (r.width / 2);
+      let dy = (evt.clientY - cy) / (r.height / 2);
+      dx = Math.max(-1, Math.min(1, dx));
+      dy = Math.max(-0.5, Math.min(0.8, dy));
+      eyes.style.transform = `translate(${dx * 2.2}px, ${dy * 1.6}px)`;
+    }
+
+    function init() {
+      fig  = $('#chefFigure');
+      eyes = $('#chefEyes');
+      if (!fig) return;
+      scheduleBlink();
+      scheduleIdle();
+      document.addEventListener('pointermove', (e) => {
+        if (state.settings.motion) return;
+        trackEyes(e);
+      });
+    }
+
+    return { init, blink, wave, cheer, wipe, shrug };
+  })();
+
+  // ==========================================================================
+  // POWERUPS
+  // ==========================================================================
+  const POWERUPS = [
+    { key: 'hint',    name: 'Chef\'s Hint',    desc: 'Highlight the best merge on the board for 4 seconds.', icon: '#i-sparkle',      cost: 25,  cooldown: 20 },
+    { key: 'crate',   name: 'Instant Crate',   desc: 'Open a spice crate right now (bypasses the free timer).', icon: '#i-crate-closed', cost: 50,  cooldown: 45 },
+    { key: 'compact', name: 'Compact Board',   desc: 'Slide every tile toward the top-left to free space.',  icon: '#i-book',          cost: 60,  cooldown: 30 },
+    { key: 'wild',    name: 'Wildcard Spice',  desc: 'Spawn three random tier-2 ingredients on empty cells.',icon: '#i-grand-masala',  cost: 100, cooldown: 60 },
+  ];
+
+  const powerupCd = Object.fromEntries(POWERUPS.map(p => [p.key, 0]));
+
+  function renderPowerups() {
+    const holder = $('#powerups');
+    if (!holder) return;
+    holder.innerHTML = '';
+    const now = Date.now();
+    POWERUPS.forEach(p => {
+      const remaining = Math.max(0, Math.ceil((powerupCd[p.key] - now) / 1000));
+      const disabled = state.coins < p.cost || remaining > 0;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'powerup' + (remaining > 0 ? ' is-cooling' : '');
+      btn.disabled = disabled;
+      btn.innerHTML = `
+        <span class="powerup__icon"><svg viewBox="0 0 64 64"><use href="${p.icon}"/></svg></span>
+        <span class="powerup__name">${p.name}</span>
+        <span class="powerup__desc">${p.desc}</span>
+        <span class="powerup__cost"><svg viewBox="0 0 64 64"><use href="#i-coin"/></svg>${p.cost}</span>
+        ${remaining > 0 ? `<span class="powerup__cd">${remaining}s</span>` : ''}
+      `;
+      btn.addEventListener('click', () => usePowerup(p.key));
+      holder.appendChild(btn);
+    });
+  }
+
+  function usePowerup(key) {
+    const p = POWERUPS.find(x => x.key === key);
+    if (!p) return;
+    const now = Date.now();
+    if (powerupCd[key] > now) return;
+    if (state.coins < p.cost) {
+      AudioFX.error(); Haptics.error();
+      showToast('Not enough coins.', 'warn');
+      return;
+    }
+    state.coins -= p.cost;
+    powerupCd[key] = now + p.cooldown * 1000;
+    AudioFX.click(); Haptics.tap();
+    applyPowerup(key);
+    updateHUD();
+    renderPowerups();
+    saveState();
+  }
+
+  function applyPowerup(key) {
+    if (key === 'hint') {
+      const pair = findBestMerge();
+      if (!pair) { showToast('No merge available.', 'warn'); return; }
+      const a = tileAt(pair.a.r, pair.a.c);
+      const b = tileAt(pair.b.r, pair.b.c);
+      [a, b].forEach(t => { if (t) { t.classList.add('reveal-highlight'); setTimeout(() => t.classList.remove('reveal-highlight'), 4000); } });
+      setStatus('Chef\'s hint: try merging these two.');
+    } else if (key === 'crate') {
+      state.nextFreeCrate = 0;
+      openCrate(true);
+    } else if (key === 'compact') {
+      compactBoard();
+      showToast('Board compacted.', 'info');
+    } else if (key === 'wild') {
+      let placed = 0;
+      for (let i = 0; i < 3; i++) {
+        const chain = choice(CHAIN_KEYS);
+        if (spawnItem(chain, 2)) placed++;
+      }
+      showToast(placed ? `Spawned ${placed} tier-2 ingredients!` : 'Board is full.', placed ? 'info' : 'warn');
+      setBubble('The spice trader owed me a favor.');
+    }
+  }
+
+  function findBestMerge() {
+    let best = null, bestTier = 0;
+    const cellsWith = [];
+    for (let r = 0; r < BOARD_ROWS; r++)
+      for (let c = 0; c < BOARD_COLS; c++)
+        if (state.board[r][c]) cellsWith.push({ r, c, item: state.board[r][c] });
+    for (let i = 0; i < cellsWith.length; i++) {
+      for (let j = i + 1; j < cellsWith.length; j++) {
+        const A = cellsWith[i], B = cellsWith[j];
+        if (A.item.chain === B.item.chain && A.item.tier === B.item.tier && A.item.tier < MAX_TIER) {
+          if (A.item.tier > bestTier) { bestTier = A.item.tier; best = { a: A, b: B }; }
+        }
+      }
+    }
+    return best;
+  }
+
+  function compactBoard() {
+    // Move every tile up-left, filling from row 0 column 0
+    const items = [];
+    for (let r = 0; r < BOARD_ROWS; r++)
+      for (let c = 0; c < BOARD_COLS; c++)
+        if (state.board[r][c]) { items.push(state.board[r][c]); state.board[r][c] = null; }
+    let idx = 0;
+    for (let r = 0; r < BOARD_ROWS && idx < items.length; r++)
+      for (let c = 0; c < BOARD_COLS && idx < items.length; c++)
+        state.board[r][c] = items[idx++];
+    renderBoard();
+    saveState();
+  }
+
+  // ==========================================================================
+  // DAILY CHALLENGE
+  // ==========================================================================
+  const CHALLENGES = [
+    { key: 'serve3',     name: 'Serve 3 orders',           goal: 3,  metric: 'orders' },
+    { key: 'merge10',    name: 'Merge 10 times',           goal: 10, metric: 'merges' },
+    { key: 'discover2',  name: 'Discover 2 new dishes',    goal: 2,  metric: 'discoveries' },
+    { key: 'crates2',    name: 'Open 2 spice crates',      goal: 2,  metric: 'crates' },
+    { key: 'coins200',   name: 'Earn 200 coins',           goal: 200,metric: 'coins' },
+    { key: 'combo3',     name: 'Chain a Combo ×3',         goal: 3,  metric: 'combo' },
+    { key: 'sell5',      name: 'Sell 5 tiles',             goal: 5,  metric: 'sold' },
+    { key: 'legendary1', name: 'Cook a legendary dish',    goal: 1,  metric: 'legendary' },
+  ];
+
+  const CHALLENGE_REWARD = 250;
+
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  }
+
+  function hashToInt(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  }
+
+  function ensureChallenge() {
+    const t = todayKey();
+    if (!state.challenge || state.challenge.day !== t) {
+      const idx = hashToInt(t) % CHALLENGES.length;
+      const def = CHALLENGES[idx];
+      state.challenge = { day: t, key: def.key, progress: 0, done: false };
+      saveState();
+    }
+    renderChallenge();
+  }
+
+  function renderChallenge() {
+    if (!state.challenge) return;
+    const def = CHALLENGES.find(c => c.key === state.challenge.key);
+    if (!def) return;
+    const nameEl = $('#challengeName');
+    const progEl = $('#challengeProgress');
+    const fillEl = $('#challengeFill');
+    const card   = $('#challengeCard');
+    if (!nameEl || !progEl || !fillEl || !card) return;
+    nameEl.textContent = def.name;
+    const cur = Math.min(state.challenge.progress, def.goal);
+    progEl.textContent = `${cur} / ${def.goal}`;
+    fillEl.style.right = (100 - (cur / def.goal * 100)) + '%';
+    card.classList.toggle('is-done', !!state.challenge.done);
+  }
+
+  function tickChallenge(metric, amount = 1) {
+    if (!state.challenge || state.challenge.done) return;
+    const def = CHALLENGES.find(c => c.key === state.challenge.key);
+    if (!def || def.metric !== metric) return;
+    state.challenge.progress = Math.min(def.goal, state.challenge.progress + amount);
+    if (state.challenge.progress >= def.goal) {
+      state.challenge.done = true;
+      state.coins += CHALLENGE_REWARD;
+      state.stats.coinsEarned += CHALLENGE_REWARD;
+      AudioFX.levelUp();
+      Haptics.levelUp();
+      showToast(`🏆 Daily Challenge — +${CHALLENGE_REWARD} coins!`, 'info');
+      setBubble('Daily challenge complete! The souk celebrates you.');
+      confettiBurst(window.innerWidth / 2, 150, 40);
+      updateHUD();
+    }
+    renderChallenge();
+    saveState();
+  }
+
+  // ==========================================================================
   // DOM REFS (grabbed after DOM ready — booted below)
   // ==========================================================================
   let boardEl, coinValEl, unlockedEl, totalCountEl, ordersEl, bookGridEl,
@@ -402,7 +734,8 @@
       tutorial, tutorialSpot, tutorialCard, tutorialStep, tutorialTotal,
       tutorialTitle, tutorialBody, tutorialSkip, tutorialNext,
       longPressRing,
-      splashEl, splashFill, splashHint, splashParticles;
+      splashEl, splashFill, splashHint, splashParticles,
+      shopBtn, shopModal, shopClose;
 
   // ==========================================================================
   // RENDER
@@ -767,6 +1100,7 @@
         AudioFX.tap();
         Haptics.tap();
         setStatus(`Selected ${chainDef(item.chain, item.tier).name}. Tap a match to merge.`);
+        if (TutorialV2 && TutorialV2.active) TutorialV2.onEvent('select', { chain: item.chain, tier: item.tier });
       }
       return;
     }
@@ -851,16 +1185,22 @@
       `;
     }
 
+    // Combo bump first so subsequent XP + coin math sees the correct multiplier
+    bumpCombo();
+    const mult = comboMultiplier();
+
     // Feedback: audio, haptics, XP, chef reaction
     if (merged.tier === MAX_TIER) {
       AudioFX.legendary();
       Haptics.legendary();
+      Chef.wipe();
     } else {
       AudioFX.merge(merged.tier);
       Haptics.merge();
     }
 
-    const xpGain = XP_FOR_MERGE[merged.tier] || 5;
+    const baseXP = XP_FOR_MERGE[merged.tier] || 5;
+    const xpGain = Math.round(baseXP * mult);
     const rectRef = dstTile ? dstTile.getBoundingClientRect() : null;
     addXP(xpGain, rectRef);
 
@@ -870,10 +1210,11 @@
       state.discovered[merged.chain][merged.tier - 1] = true;
       showToast(`Discovered ${def.name}!`, 'info');
       if (rectRef) confettiBurst(rectRef.left + rectRef.width / 2, rectRef.top + rectRef.height / 2, 22);
-      // Contextual chef line
       const lines = (CHEF_MERGE_LINES[merged.chain] || {})[merged.tier] || [];
       if (lines.length) setBubble(choice(lines));
       else setBubble(`${def.name} unlocked!`);
+      Chef.cheer();
+      tickChallenge('discoveries', 1);
     } else {
       setStatus(`Merged into ${def.name}.`);
     }
@@ -882,7 +1223,14 @@
       showDelicious();
       screenShake();
       if (rectRef) confettiBurst(rectRef.left + rectRef.width / 2, rectRef.top + rectRef.height / 2, 40);
+      tickChallenge('legendary', 1);
     }
+
+    tickChallenge('merges', 1);
+    if (combo.count >= 3) tickChallenge('combo', 1);
+
+    // Interactive tutorial hook
+    if (TutorialV2 && TutorialV2.active) TutorialV2.onEvent('merge', { chain: merged.chain, tier: merged.tier });
 
     checkAchievements();
     updateHUD();
@@ -945,6 +1293,8 @@
     }
     AudioFX.sell();
     Haptics.sell();
+    tickChallenge('sold', 1);
+    tickChallenge('coins', price);
     checkAchievements();
     updateHUD();
     setStatus(`Sold ${chainDef(item.chain, item.tier).name} for ${price} coins.`);
@@ -1074,9 +1424,13 @@
     activeOrderIdx = -1;
     AudioFX.orderDone();
     Haptics.merge();
+    Chef.wave();
     addXP(Math.round(order.reward / 3), tile ? tile.getBoundingClientRect() : null);
     showToast(`+${order.reward} coins served!`);
     setBubble(choice(CHEF_ORDER_LINES));
+    tickChallenge('orders', 1);
+    tickChallenge('coins', order.reward);
+    if (TutorialV2 && TutorialV2.active) TutorialV2.onEvent('order', {});
     ensureOrders();
     checkAchievements();
     updateHUD();
@@ -1101,6 +1455,8 @@
     state.stats.crateOpens += 1;
     AudioFX.crate();
     Haptics.tap();
+    tickChallenge('crates', 1);
+    if (TutorialV2 && TutorialV2.active) TutorialV2.onEvent('crate', {});
 
     const drops = [];
     for (let i = 0; i < 3; i++) {
@@ -1221,74 +1577,149 @@
   // TUTORIAL
   // ==========================================================================
 
-  const Tutorial = {
+  // Interactive tutorial: waits for the user to actually perform each action.
+  const TutorialV2 = {
+    active: false,
+    idx: 0,
     steps: [
       {
-        title: 'Meet the board',
-        body: 'This is your merge kitchen. Every tile is a step toward a legendary dish. Tap two matching ingredients to combine them.',
-        target: () => boardEl,
+        title: 'Welcome!',
+        body: 'This is your merge kitchen. First, let\'s combine two ingredients. Tap the pulsing tile.',
+        hint: 'Tap this tile',
+        findTargets: () => {
+          const t = document.querySelector('.tile[data-chain="spice"][data-tier="1"]');
+          return t ? [t] : [];
+        },
+        waitFor: 'select-target',
+        canSkipIfMissing: true,
+      },
+      {
+        title: 'Merge it!',
+        body: 'Now tap another matching cumin to merge them into ras el hanout.',
+        hint: 'Tap another cumin',
+        findTargets: () => $$('.tile[data-chain="spice"][data-tier="1"]'),
+        waitFor: 'merge',
+        canSkipIfMissing: true,
       },
       {
         title: 'Serve the souk',
-        body: 'Souk Orders show what customers want. Tap an order card, then tap a matching dish on the board — coins fly to your meter.',
-        target: () => document.querySelector('.stalls'),
+        body: 'Customers order dishes on the left. Tap any order card to select it, then tap a matching tile on the board.',
+        hint: 'Tap an order',
+        findTargets: () => [document.querySelector('.order')],
+        waitFor: 'order',
+        canSkipIfMissing: false,
+        allowNextButton: true,
       },
       {
         title: 'Open a Spice Crate',
-        body: 'Crates drop three new ingredients into empty cells. One is free every 60 seconds, or spend 25 coins for another.',
-        target: () => document.getElementById('crateBtn'),
+        body: 'When you need more tiles, open a Spice Crate — one is free every minute.',
+        hint: 'Tap Spice Crate',
+        findTargets: () => [document.getElementById('crateBtn')],
+        waitFor: 'crate',
+        canSkipIfMissing: false,
       },
       {
-        title: 'Sell tiles you don\'t need',
-        body: 'Board full? Long-press a tile to sell it for coins. Grand dishes sell for a lot more than raw ingredients.',
-        target: () => document.getElementById('undoBtn'),
+        title: 'You\'re ready!',
+        body: 'Long-press a tile to sell. Chain merges within 3 seconds for combo bonuses. Powerups are in the sparkle button. Enjoy!',
+        hint: null,
+        findTargets: () => [],
+        waitFor: 'next',
+        allowNextButton: true,
       },
     ],
-    idx: 0,
+
     run() {
-      Tutorial.idx = 0;
+      TutorialV2.active = true;
+      TutorialV2.idx = 0;
       tutorial.classList.add('is-open');
       tutorial.setAttribute('aria-hidden', 'false');
-      tutorialTotal.textContent = Tutorial.steps.length;
-      Tutorial.show();
+      tutorialTotal.textContent = TutorialV2.steps.length;
+      TutorialV2.show();
     },
+
     show() {
-      const s = Tutorial.steps[Tutorial.idx];
-      tutorialStep.textContent  = Tutorial.idx + 1;
+      const s = TutorialV2.steps[TutorialV2.idx];
+      if (!s) return TutorialV2.finish();
+
+      tutorialStep.textContent  = TutorialV2.idx + 1;
       tutorialTitle.textContent = s.title;
       tutorialBody.textContent  = s.body;
+      tutorialNext.textContent  = (TutorialV2.idx === TutorialV2.steps.length - 1) ? 'Start cooking' : 'Next';
+      tutorialNext.style.display = (s.waitFor === 'next' || s.allowNextButton) ? 'inline-flex' : 'none';
+
+      // Clear old highlights and hint
+      $$('.tut-target').forEach(el => el.classList.remove('tut-target'));
+      const tutHint = $('#tutHint');
+      const tutHintBody = $('#tutHintBody');
+      if (tutHint) tutHint.classList.remove('is-open');
+
+      const targets = (s.findTargets && s.findTargets().filter(Boolean)) || [];
+      if (!targets.length && s.canSkipIfMissing) {
+        // Advance to next automatically if there's nothing to point at
+        setTimeout(() => TutorialV2.next(), 50);
+        return;
+      }
+
+      targets.forEach(el => el.classList.add('tut-target'));
+      // Position hint above the first target
+      if (targets[0] && tutHint && tutHintBody) {
+        const r = targets[0].getBoundingClientRect();
+        tutHint.style.left = (r.left + r.width / 2) + 'px';
+        tutHint.style.top  = r.top + 'px';
+        tutHintBody.textContent = s.hint || '';
+        if (s.hint) tutHint.classList.add('is-open');
+      }
+
       // Position spotlight
-      const el = s.target && s.target();
-      if (el) {
-        const r = el.getBoundingClientRect();
-        const size = Math.max(120, Math.min(320, Math.max(r.width, r.height) * 1.2));
+      if (targets[0]) {
+        const r = targets[0].getBoundingClientRect();
+        const size = Math.max(140, Math.min(360, Math.max(r.width, r.height) * 1.6));
         tutorialSpot.style.left = (r.left + r.width / 2) + 'px';
         tutorialSpot.style.top  = (r.top  + r.height / 2) + 'px';
         tutorialSpot.style.width  = size + 'px';
         tutorialSpot.style.height = size + 'px';
-        tutorialSpot.style.transform = 'translate(-50%, -50%)';
-      }
-      tutorialNext.textContent = (Tutorial.idx === Tutorial.steps.length - 1) ? 'Start cooking' : 'Next';
-    },
-    next() {
-      if (Tutorial.idx < Tutorial.steps.length - 1) {
-        Tutorial.idx += 1;
-        Tutorial.show();
       } else {
-        Tutorial.finish();
+        tutorialSpot.style.width = '0px';
+        tutorialSpot.style.height = '0px';
       }
     },
+
+    onEvent(kind, payload) {
+      if (!TutorialV2.active) return;
+      const s = TutorialV2.steps[TutorialV2.idx];
+      if (!s) return;
+      // 'select-target' means user tapped the pulsing tile — the merge step waits for the actual merge
+      if (s.waitFor === kind || (s.waitFor === 'select-target' && kind === 'select')) {
+        TutorialV2.next();
+      }
+    },
+
+    next() {
+      if (TutorialV2.idx < TutorialV2.steps.length - 1) {
+        TutorialV2.idx += 1;
+        TutorialV2.show();
+      } else {
+        TutorialV2.finish();
+      }
+    },
+
     finish() {
+      TutorialV2.active = false;
+      $$('.tut-target').forEach(el => el.classList.remove('tut-target'));
+      const tutHint = $('#tutHint');
+      if (tutHint) tutHint.classList.remove('is-open');
       tutorial.classList.remove('is-open');
       tutorial.setAttribute('aria-hidden', 'true');
       state.settings.tutorialDone = true;
       saveState();
     },
   };
+  // Backwards-compat alias — Settings modal calls Tutorial.run
+  const Tutorial = TutorialV2;
 
   function wireTutorial() {
-    tutorialNext.addEventListener('click', () => { AudioFX.click(); Tutorial.next(); });
-    tutorialSkip.addEventListener('click', () => { AudioFX.click(); Tutorial.finish(); });
+    tutorialNext.addEventListener('click', () => { AudioFX.click(); TutorialV2.next(); });
+    tutorialSkip.addEventListener('click', () => { AudioFX.click(); TutorialV2.finish(); });
   }
 
   // ==========================================================================
@@ -1468,6 +1899,10 @@
     splashFill      = $('#splashFill');
     splashHint      = $('#splashHint');
     splashParticles = $('#splashParticles');
+
+    shopBtn    = $('#shopBtn');
+    shopModal  = $('#shopModal');
+    shopClose  = $('#shopClose');
   }
 
   function attachHandlers() {
@@ -1498,9 +1933,14 @@
     achievementsBtn.addEventListener('click', () => { AudioFX.click(); renderAchievements(); openModal(achievementsModal); });
     achievementsClose.addEventListener('click', () => { AudioFX.click(); closeModal(achievementsModal); });
 
+    shopBtn.addEventListener('click', () => { AudioFX.click(); renderPowerups(); openModal(shopModal); });
+    shopClose.addEventListener('click', () => { AudioFX.click(); closeModal(shopModal); });
+    // Refresh powerup cooldown labels every second while shop is open
+    setInterval(() => { if (shopModal.classList.contains('is-open')) renderPowerups(); }, 1000);
+
     undoBtn.addEventListener('click', () => { AudioFX.click(); undo(); });
 
-    [bookModal, crateModal, settingsModal, achievementsModal].forEach(m => {
+    [bookModal, crateModal, settingsModal, achievementsModal, shopModal].forEach(m => {
       m.addEventListener('click', (e) => { if (e.target === m) closeModal(m); });
     });
 
@@ -1513,7 +1953,7 @@
       if (state.settings.music) AudioFX.startMusic();
       // Show tutorial on first play
       if (!state.settings.tutorialDone) {
-        setTimeout(() => Tutorial.run(), 600);
+        setTimeout(() => TutorialV2.run(), 600);
       }
     });
 
@@ -1534,12 +1974,14 @@
     renderBoard();
     updateHUD();
     renderBook();
+    ensureChallenge();
     updateFreeCrateBtn();
     setInterval(updateFreeCrateBtn, 1000);
     spawnAmbientParticles();
     rotateChefLines();
     applySettings();
     attachHandlers();
+    Chef.init();
     setStatus('Tap or drag two matching ingredients to merge.');
 
     runSplash(() => {
