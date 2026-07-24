@@ -239,8 +239,21 @@ button:disabled {
   display: grid;
   place-items: center;
   padding: var(--s-5);
-  background: radial-gradient(circle at 50% 30%, rgba(43,24,16,0.35), rgba(43,24,16,0.75) 80%);
+  background-color: #2B1810;
+  background-image:
+    linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.55) 100%),
+    url('assets/bg-title-hero.jpg');
+  background-size: cover;
+  background-position: center;
   transition: opacity 500ms var(--ease-soft), visibility 500ms;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .title {
+    background-image:
+      linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.6) 100%),
+      url('assets/splash-hero-portrait.jpg');
+  }
 }
 
 .title.is-gone {
@@ -250,15 +263,16 @@ button:disabled {
 
 .title__panel {
   position: relative;
-  max-width: 560px;
+  max-width: 620px;
   width: 100%;
   background:
-    linear-gradient(180deg, rgba(255, 249, 234, 0.98), rgba(245, 230, 200, 0.96));
+    linear-gradient(180deg, rgba(255, 249, 234, 0.94), rgba(245, 230, 200, 0.92));
   border: 2px solid rgba(255, 209, 102, 0.6);
   border-radius: var(--r-xl);
-  padding: var(--s-6) var(--s-6) var(--s-5);
+  padding: var(--s-5) var(--s-6) var(--s-5);
   text-align: center;
   color: var(--midnight);
+  backdrop-filter: blur(2px);
   box-shadow:
     0 0 0 6px rgba(122, 30, 40, 0.35),
     0 24px 60px rgba(43, 24, 16, 0.55),
@@ -282,6 +296,22 @@ button:disabled {
 .title__ornament--top { margin-bottom: var(--s-3); }
 .title__ornament--bot { margin-top: var(--s-4); }
 
+.title__logo-img {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto var(--s-1);
+  filter: drop-shadow(0 8px 16px rgba(43, 24, 16, 0.35));
+  animation: titleLogoIn 900ms var(--ease-back) both;
+}
+
+@keyframes titleLogoIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Legacy text logo fallback */
 .title__logo {
   font-family: var(--font-display);
   font-weight: 700;
@@ -1226,12 +1256,24 @@ button:disabled {
   place-items: center;
   gap: 18px;
   padding: var(--s-5);
-  background:
-    radial-gradient(circle at 50% 20%, rgba(255, 235, 161, 0.35), transparent 60%),
-    linear-gradient(180deg, #FFEBA1 0%, #E67A3E 40%, #7A1E28 80%, #2B1810 100%);
+  background-color: #2B1810;
+  background-image:
+    linear-gradient(180deg, rgba(43, 24, 16, 0) 55%, rgba(43, 24, 16, 0.55) 100%),
+    url('assets/splash-bg.jpg');
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
   text-align: center;
   transition: opacity 800ms var(--ease-soft), visibility 800ms;
+}
+
+/* Portrait devices — swap to the chef-in-the-souk portrait scene */
+@media (orientation: portrait) and (max-width: 900px) {
+  .splash {
+    background-image:
+      linear-gradient(180deg, rgba(43, 24, 16, 0) 45%, rgba(43, 24, 16, 0.55) 100%),
+      url('assets/splash-hero-portrait.jpg');
+  }
 }
 
 .splash.is-gone { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -1277,8 +1319,18 @@ button:disabled {
   100% { transform: translate(60px, -20vh) scale(1.2); opacity: 0; }
 }
 
-.splash__logo {
+.splash__logo,
+.splash__logo-img {
   position: relative;
+  max-width: min(720px, 92vw);
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 12px 24px rgba(43, 24, 16, 0.55));
+  animation: splashLogoIn 1200ms var(--ease-back) both;
+}
+
+/* Legacy text logo kept for a11y fallback */
+.splash__logo {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: clamp(64px, 15vw, 130px);
@@ -1288,8 +1340,6 @@ button:disabled {
   background-clip: text;
   color: transparent;
   letter-spacing: -0.02em;
-  filter: drop-shadow(0 6px 0 rgba(43, 24, 16, 0.35));
-  animation: splashLogoIn 1200ms var(--ease-back) both;
 }
 
 @keyframes splashLogoIn {
