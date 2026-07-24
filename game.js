@@ -42,8 +42,8 @@
   const FREE_CRATE_INTERVAL_MS = 60 * 1000;
   const START_COINS = 120;
   const DAILY_COINS = 50;
-  const BOARD_COLS = 6;
-  const BOARD_ROWS = 7;
+  const BOARD_COLS = 5;
+  const BOARD_ROWS = 6;
   const LONG_PRESS_MS = 600;
 
   const LEVEL_TITLES = [
@@ -188,6 +188,15 @@
       state.stats    = Object.assign({ merges: 0, ordersDone: 0, coinsEarned: 0, sold: 0, undos: 0, sessions: 0, crateOpens: 0 }, s.stats || {});
       state.achievements = s.achievements || {};
       if (!Array.isArray(state.orders)) state.orders = [];
+      // Grid-dimension migration: if a returning player saved a board with
+      // different dimensions, discard just the board and reseed with the
+      // current constants — keeps coins/XP/rank/discoveries intact.
+      const savedRows = state.board.length;
+      const savedCols = state.board[0] ? state.board[0].length : 0;
+      if (savedRows !== BOARD_ROWS || savedCols !== BOARD_COLS) {
+        state.board = makeEmptyBoard();
+        seedInitialBoard();
+      }
       return true;
     } catch (_) { return false; }
   }
