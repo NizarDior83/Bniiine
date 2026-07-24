@@ -460,8 +460,31 @@ button:disabled {
 
 .hud__brand {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.hud__plaque {
+  display: block;
+  flex-shrink: 0;
+}
+
+.hud__plaque-img {
+  width: 56px;
+  height: 56px;
+  display: block;
+  border-radius: 12px;
+  filter: drop-shadow(0 3px 6px rgba(43, 24, 16, 0.4));
+}
+
+.hud__plaque.is-fallback { display: none; }
+
+.hud__brand-text {
+  display: flex;
   flex-direction: column;
   line-height: 1;
+  min-width: 0;
 }
 
 .hud__logo {
@@ -1261,10 +1284,12 @@ button:disabled {
     gap: var(--s-2);
     padding: var(--s-2) var(--s-3);
   }
-  .hud__brand { grid-column: 1 / 2; }
+  .hud__brand { grid-column: 1 / 2; gap: 6px; }
+  .hud__plaque-img { width: 40px; height: 40px; border-radius: 9px; }
   .hud__meters { grid-column: 2 / 3; justify-content: flex-end; }
   .hud__actions { grid-column: 1 / -1; justify-content: space-between; }
-  .hud__logo { font-size: 24px; }
+  .hud__logo { font-size: 20px; }
+  .hud__sub  { font-size: 9px; }
   .meter { min-width: 74px; padding: 4px 10px 4px 4px; }
   .meter__val { font-size: 16px; }
   .btn { padding: 8px 12px; font-size: 13px; }
