@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
 </head>
 <body>
 
@@ -26,7 +27,6 @@
       <img class="splash__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
     </picture>
     <div class="splash__logo-fallback" aria-hidden="true">Bniiine</div>
-    <div class="splash__arabic" lang="ar">بنين</div>
     <div class="splash__bar" aria-hidden="true"><div class="splash__fill" id="splashFill"></div></div>
     <div class="splash__hint" id="splashHint">Warming the tagine…</div>
   </div>
@@ -422,8 +422,7 @@
         <img id="titleLogo" class="title__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
       </picture>
       <div class="title__logo-fallback" aria-hidden="true">Bniiine</div>
-      <p class="title__arabic" lang="ar">بنين</p>
-      <p class="title__lede">Merge saffron, mint, and lamb from bustling souks and riad courtyards.<br/>Unlock <em>tagines</em>, <em>couscous royale</em>, and <em>pastilla</em>.<br/>Build your empire from Marrakech to Tunis.</p>
+      <p class="title__lede">Merge saffron, mint, and lamb from bustling souks and riad courtyards.<br/>Unlock tagines, couscous royale, and pastilla.<br/>Build your empire from Marrakech to Tunis.</p>
       <button class="title__cta" id="startBtn" type="button">
         <span>Enter the Kitchen</span>
         <svg viewBox="0 0 24 24" width="20" height="20"><use href="#i-play"/></svg>
@@ -438,8 +437,14 @@
   <main class="app" id="app" aria-hidden="true">
     <header class="hud">
       <div class="hud__brand">
-        <span class="hud__logo">Bniiine</span>
-        <span class="hud__sub">Maghreb Kitchen</span>
+        <picture class="hud__plaque">
+          <source srcset="assets/logo-bniiine-square.webp" type="image/webp" />
+          <img class="hud__plaque-img" src="assets/logo-bniiine-square.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+        </picture>
+        <div class="hud__brand-text">
+          <span class="hud__logo">Bniiine</span>
+          <span class="hud__sub">Maghreb Kitchen</span>
+        </div>
       </div>
 
       <div class="hud__meters">
