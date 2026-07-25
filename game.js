@@ -35,6 +35,9 @@
 
   const CHAIN_KEYS = Object.keys(CHAINS);
   const MAX_TIER   = CHAINS.spice.length;
+  // T1 items are raw ingredients (cumin seed, wheat grain, raw chicken) —
+  // they're not "recipes", so the recipe book only shows T2+ as dishes to master
+  const MIN_RECIPE_TIER = 2;
   const REWARD = { 1: 3, 2: 8, 3: 20, 4: 50, 5: 140 };
   const XP_FOR_MERGE = { 2: 5, 3: 15, 4: 40, 5: 100 };
   const SELL_PRICE = { 1: 1, 2: 3, 3: 8, 4: 20, 5: 60 };
@@ -118,7 +121,7 @@
     { key: 'firstMerge',    name: 'First Merge',         desc: 'Combine two ingredients.',           icon: '#i-sparkle',  check: s => s.stats.merges >= 1 },
     { key: 'discovery5',    name: 'Souk Regular',         desc: 'Discover 5 dishes.',                 icon: '#i-book',     check: s => discoveredCount() >= 5 },
     { key: 'discovery10',   name: 'Well-Read Cook',       desc: 'Discover 10 dishes.',                icon: '#i-book',     check: s => discoveredCount() >= 10 },
-    { key: 'discoveryAll',  name: 'Grand Master',         desc: 'Discover every dish in the book.',   icon: '#i-trophy',   check: s => discoveredCount() >= CHAIN_KEYS.length * MAX_TIER },
+    { key: 'discoveryAll',  name: 'Grand Master',         desc: 'Discover every dish in the book.',   icon: '#i-trophy',   check: s => discoveredCount() >= totalRecipeCount() },
     { key: 'grandMasala',   name: 'Spice Sultan',         desc: 'Unlock Grand Masala.',               icon: '#i-grand-masala', check: s => s.discovered.spice[MAX_TIER - 1] },
     { key: 'berberFeast',   name: 'Feast of the Ancients',desc: 'Cook the Berber Feast.',             icon: '#i-berber-feast', check: s => s.discovered.grain[MAX_TIER - 1] },
     { key: 'lambTagine',    name: 'Emir of Tagine',       desc: 'Cook the Grand Lamb Tagine.',        icon: '#i-lamb-tagine',  check: s => s.discovered.meat[MAX_TIER - 1] },
@@ -218,9 +221,13 @@
     return e;
   }
   function discoveredCount() {
+    // Only T2+ counts as a "recipe" discovered — T1 raw ingredients don't count
     let n = 0;
-    CHAIN_KEYS.forEach(k => state.discovered[k].forEach(v => { if (v) n++; }));
+    CHAIN_KEYS.forEach(k => state.discovered[k].forEach((v, i) => { if (v && (i + 1) >= MIN_RECIPE_TIER) n++; }));
     return n;
+  }
+  function totalRecipeCount() {
+    return CHAIN_KEYS.length * (MAX_TIER - MIN_RECIPE_TIER + 1);
   }
 
   // ==========================================================================
@@ -777,7 +784,7 @@
   function updateHUD() {
     coinValEl.textContent = state.coins;
     unlockedEl.textContent = discoveredCount();
-    totalCountEl.textContent = CHAIN_KEYS.length * MAX_TIER;
+    totalCountEl.textContent = totalRecipeCount();
     // Level bar
     const prevLevelTotal = totalXpForLevel(state.level - 1);
     const nextLevelTotal = totalXpForLevel(state.level);
@@ -822,6 +829,7 @@
     CHAIN_KEYS.forEach(chain => {
       CHAINS[chain].forEach((def, i) => {
         const tier = i + 1;
+        if (tier < MIN_RECIPE_TIER) return;   // hide raw ingredients
         const unlocked = state.discovered[chain][i];
         const card = document.createElement('div');
         card.className = 'book__card' + (unlocked ? '' : ' book__card--locked');
