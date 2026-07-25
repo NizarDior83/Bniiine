@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Capacitor dependencies
         working-directory: android
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --legacy-peer-deps
 
       - name: Add Android platform (generates the Gradle project)
         working-directory: android
