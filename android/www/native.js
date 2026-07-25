@@ -34,7 +34,7 @@
   ] = await Promise.all([
     load('@capacitor/haptics'),
     load('@capacitor/app'),
-    load('@capacitor/keep-awake'),
+    load('@capacitor-community/keep-awake'),
     load('@capacitor/splash-screen'),
     load('@capacitor/status-bar'),
     load('@capacitor/screen-orientation'),
