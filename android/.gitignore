@@ -1,0 +1,26 @@
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# Capacitor / Android build outputs
+android/
+!AndroidManifest.overrides.xml
+.gradle/
+build/
+captures/
+local.properties
+*.iml
+
+# Signing (never commit)
+*.jks
+*.keystore
+gradle.properties.local
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

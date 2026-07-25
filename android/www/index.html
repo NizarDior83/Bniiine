@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#2B1810" />
+  <meta name="description" content="Bniiine — The Ultimate North African Culinary Empire. Merge ingredients, unlock recipes, build your riad restaurant from Marrakech to Tunis." />
+  <title>Bniiine — The North African Culinary Empire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi+Fun:wght@600;700&family=Cairo:wght@400;600;700;800;900&family=Amiri:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="native.css" />
+  <link rel="icon" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+</head>
+<body>
+
+  <!-- ============================================================
+       SPLASH SCREEN — first paint, before everything else
+       ============================================================ -->
+  <div class="splash" id="splash">
+    <div class="splash__glow" aria-hidden="true"></div>
+    <div class="splash__particles" id="splashParticles" aria-hidden="true"></div>
+    <picture class="splash__logo-pic">
+      <source srcset="assets/logo-bniiine.webp" type="image/webp" />
+      <img class="splash__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+    </picture>
+    <div class="splash__logo-fallback" aria-hidden="true">Bniiine</div>
+    <div class="splash__bar" aria-hidden="true"><div class="splash__fill" id="splashFill"></div></div>
+    <div class="splash__hint" id="splashHint">Warming the tagine…</div>
+  </div>
+
+  <!-- ============================================================
+       SVG ICON SPRITE — every ingredient/dish/dressing icon
+       ============================================================ -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <radialGradient id="g-gold" cx="35%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#FFEBA1"/>
+        <stop offset="55%" stop-color="#FFD166"/>
+        <stop offset="100%" stop-color="#B58314"/>
+      </radialGradient>
+      <radialGradient id="g-clay" cx="30%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="#E28C55"/>
+        <stop offset="60%" stop-color="#C4622D"/>
+        <stop offset="100%" stop-color="#7A3413"/>
+      </radialGradient>
+      <radialGradient id="g-teal" cx="30%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="#5FD1C2"/>
+        <stop offset="60%" stop-color="#2A9D8F"/>
+        <stop offset="100%" stop-color="#0F5952"/>
+      </radialGradient>
+      <radialGradient id="g-blue" cx="30%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="#3E7CB1"/>
+        <stop offset="60%" stop-color="#1C4E80"/>
+        <stop offset="100%" stop-color="#0A2542"/>
+      </radialGradient>
+      <radialGradient id="g-berry" cx="30%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="#B94A55"/>
+        <stop offset="60%" stop-color="#7A1E28"/>
+        <stop offset="100%" stop-color="#3D0A11"/>
+      </radialGradient>
+      <radialGradient id="g-cream" cx="35%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#FFF9EA"/>
+        <stop offset="70%" stop-color="#F5E6C8"/>
+        <stop offset="100%" stop-color="#C7B084"/>
+      </radialGradient>
+      <linearGradient id="g-steam" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0.85)"/>
+      </linearGradient>
+      <pattern id="p-zellige" x="0" y="0" width="64" height="64" patternUnits="userSpaceOnUse">
+        <rect width="64" height="64" fill="transparent"/>
+        <path d="M32 0 L64 32 L32 64 L0 32 Z" fill="none" stroke="rgba(28,78,128,0.35)" stroke-width="1.5"/>
+        <circle cx="32" cy="32" r="6" fill="none" stroke="rgba(232,166,43,0.5)" stroke-width="1.2"/>
+        <path d="M32 20 L44 32 L32 44 L20 32 Z" fill="rgba(42,157,143,0.15)"/>
+      </pattern>
+    </defs>
+
+    <!-- ═══ SPICE CHAIN ═══ -->
+    <symbol id="i-cumin" viewBox="0 0 64 64">
+      <image href="assets/tile-spice-1-cumin.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-ras" viewBox="0 0 64 64">
+      <image href="assets/tile-spice-2-ras.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-harissa" viewBox="0 0 64 64">
+      <image href="assets/tile-spice-3-harissa.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-spice-chest" viewBox="0 0 64 64">
+      <image href="assets/tile-spice-4-chest.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-grand-masala" viewBox="0 0 64 64">
+      <image href="assets/tile-spice-5-masala.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <!-- ═══ GRAIN CHAIN ═══ -->
+    <symbol id="i-wheat" viewBox="0 0 64 64">
+      <image href="assets/tile-grain-1-wheat.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-semolina" viewBox="0 0 64 64">
+      <image href="assets/tile-grain-2-semolina.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-couscous" viewBox="0 0 64 64">
+      <image href="assets/tile-grain-3-couscous.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-royal-couscous" viewBox="0 0 64 64">
+      <image href="assets/tile-grain-4-royal-couscous.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-berber-feast" viewBox="0 0 64 64">
+      <image href="assets/tile-grain-5-berber.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <!-- ═══ PROTEIN CHAIN ═══ -->
+    <symbol id="i-chicken" viewBox="0 0 64 64">
+      <image href="assets/tile-meat-1-chicken.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-kefta" viewBox="0 0 64 64">
+      <image href="assets/tile-meat-2-kefta.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-merguez" viewBox="0 0 64 64">
+      <image href="assets/tile-meat-3-merguez.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-tagine-chicken" viewBox="0 0 64 64">
+      <image href="assets/tile-meat-4-tagine-chicken.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-lamb-tagine" viewBox="0 0 64 64">
+      <image href="assets/tile-meat-5-lamb-tagine.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <!-- ═══ UI ICONS ═══ -->
+    <symbol id="i-coin" viewBox="0 0 64 64">
+      <image href="assets/ui-coin.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-crate-closed" viewBox="0 0 64 64">
+      <image href="assets/ui-crate-closed.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-book" viewBox="0 0 64 64">
+      <path d="M8 12 L32 18 L32 56 L8 50 Z" fill="url(#g-teal)"/>
+      <path d="M56 12 L32 18 L32 56 L56 50 Z" fill="url(#g-blue)"/>
+      <path d="M8 12 L32 18 L56 12" fill="none" stroke="#0A2542" stroke-width="1"/>
+      <path d="M14 24 L28 28" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <path d="M14 32 L28 36" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <path d="M14 40 L28 44" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <path d="M36 28 L50 24" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <path d="M36 36 L50 32" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <path d="M36 44 L50 40" stroke="#F5E6C8" stroke-width="1.5" opacity="0.7"/>
+      <circle cx="32" cy="34" r="4" fill="url(#g-gold)"/>
+      <circle cx="32" cy="34" r="1.5" fill="#7A3413"/>
+    </symbol>
+
+    <symbol id="i-sparkle" viewBox="0 0 64 64">
+      <path d="M32 8 L36 28 L56 32 L36 36 L32 56 L28 36 L8 32 L28 28 Z" fill="url(#g-gold)"/>
+    </symbol>
+
+    <symbol id="i-lantern" viewBox="0 0 64 64">
+      <image href="assets/ui-lantern.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-arch" viewBox="0 0 100 100">
+      <path d="M10 90 L10 40 Q10 10 50 10 Q90 10 90 40 L90 90 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M50 10 L50 22" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="50" cy="26" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    </symbol>
+
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-play" viewBox="0 0 24 24">
+      <path d="M7 5 L19 12 L7 19 Z" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-gear" viewBox="0 0 24 24">
+      <image href="assets/ui-gear.png" x="0" y="0" width="24" height="24" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-undo" viewBox="0 0 24 24">
+      <path d="M3 12 A9 9 0 1 1 12 21" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M3 12 L7 8 M3 12 L7 16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-trophy" viewBox="0 0 64 64">
+      <image href="assets/ui-trophy.png" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid meet"/>
+    </symbol>
+
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/>
+      <path d="M8 11 L8 7 A4 4 0 0 1 16 7 L16 11" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 21 C 8 17 3 13 3 8 A5 5 0 0 1 12 6 A5 5 0 0 1 21 8 C 21 13 16 17 12 21 Z" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-tea" viewBox="0 0 64 64">
+      <path d="M14 26 L46 26 L44 50 Q44 54 40 54 L20 54 Q16 54 16 50 Z" fill="url(#g-teal)"/>
+      <ellipse cx="30" cy="26" rx="16" ry="3" fill="#0F5952"/>
+      <path d="M46 32 Q56 34 54 44 Q52 48 46 46" fill="none" stroke="url(#g-teal)" stroke-width="4"/>
+      <path d="M22 18 Q24 10 28 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" fill="none"/>
+      <path d="M32 16 Q34 8 38 12" stroke="rgba(255,255,255,0.7)" stroke-width="2" fill="none"/>
+      <circle cx="30" cy="40" r="3" fill="#FFD166"/>
+    </symbol>
+  </svg>
+
+  <!-- ============================================================
+       AMBIENT SCENE — sunset, riad silhouette, lanterns, particles
+       ============================================================ -->
+  <div class="scene" aria-hidden="true">
+    <div class="scene__sky"></div>
+    <div class="scene__sun"></div>
+    <div class="scene__medina">
+      <svg viewBox="0 0 1440 400" preserveAspectRatio="none">
+        <path d="M0 400 L0 260 L80 260 L80 220 L120 220 L120 180 L160 180 L160 240 L220 240 L220 200 L260 200 L280 180 L300 200 L300 260 L360 260 L360 220 L400 220 L400 180 L440 180 L440 260 L500 260 L500 210 L540 210 L560 180 L580 210 L580 260 L640 260 L640 230 L700 230 L700 200 L740 200 L740 260 L800 260 L800 220 L840 220 L840 190 L880 190 L900 170 L920 190 L920 240 L980 240 L980 210 L1020 210 L1020 180 L1060 180 L1060 240 L1120 240 L1120 200 L1160 200 L1180 180 L1200 200 L1200 260 L1260 260 L1260 220 L1300 220 L1300 190 L1340 190 L1340 260 L1440 260 L1440 400 Z" fill="rgba(43, 24, 16, 0.55)"/>
+        <g fill="rgba(43, 24, 16, 0.75)">
+          <circle cx="130" cy="180" r="8"/>
+          <circle cx="290" cy="170" r="6"/>
+          <circle cx="480" cy="200" r="7"/>
+          <circle cx="720" cy="200" r="9"/>
+          <circle cx="910" cy="160" r="8"/>
+          <circle cx="1180" cy="180" r="6"/>
+          <circle cx="1300" cy="180" r="7"/>
+        </g>
+      </svg>
+    </div>
+    <div class="scene__zellige"></div>
+    <svg class="scene__lantern scene__lantern--left" viewBox="0 0 64 64"><use href="#i-lantern"/></svg>
+    <svg class="scene__lantern scene__lantern--right" viewBox="0 0 64 64"><use href="#i-lantern"/></svg>
+    <div class="scene__particles" id="particles"></div>
+  </div>
+
+  <!-- ============================================================
+       TITLE / INTRO OVERLAY
+       ============================================================ -->
+  <div class="title" id="titleScreen" role="dialog" aria-labelledby="titleLogo" aria-modal="true">
+    <div class="title__panel">
+      <picture class="title__logo-pic">
+        <source srcset="assets/logo-bniiine.webp" type="image/webp" />
+        <img id="titleLogo" class="title__logo-img" src="assets/logo-bniiine.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+      </picture>
+      <div class="title__logo-fallback" aria-hidden="true">Bniiine</div>
+      <p class="title__lede">Merge saffron, mint, and lamb from bustling souks and riad courtyards.<br/>Unlock tagines, couscous royale, and pastilla.<br/>Build your empire from Marrakech to Tunis.</p>
+      <button class="title__cta" id="startBtn" type="button">
+        <span>Enter the Kitchen</span>
+        <svg viewBox="0 0 24 24" width="20" height="20"><use href="#i-play"/></svg>
+      </button>
+      <div class="title__hint">Tap two matching tiles to merge. Same ingredient + same tier → next tier.</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       GAME SHELL
+       ============================================================ -->
+  <main class="app" id="app" aria-hidden="true">
+    <header class="hud">
+      <div class="hud__brand">
+        <picture class="hud__plaque">
+          <source srcset="assets/logo-bniiine-square.webp" type="image/webp" />
+          <img class="hud__plaque-img" src="assets/logo-bniiine-square.png" alt="Bniiine" onerror="this.parentElement.classList.add('is-fallback')" />
+        </picture>
+        <div class="hud__brand-text">
+          <span class="hud__logo">Bniiine</span>
+          <span class="hud__sub">Maghreb Kitchen</span>
+        </div>
+      </div>
+
+      <div class="hud__meters">
+        <div class="meter" title="Coins">
+          <svg class="meter__icon" viewBox="0 0 64 64"><use href="#i-coin"/></svg>
+          <span class="meter__val" id="coinVal">120</span>
+        </div>
+        <div class="meter meter--muted" title="Recipes discovered">
+          <svg class="meter__icon" viewBox="0 0 64 64"><use href="#i-book"/></svg>
+          <span class="meter__val"><span id="unlockedCount">0</span>/<span id="totalCount">15</span></span>
+        </div>
+      </div>
+
+      <div class="hud__actions">
+        <button class="btn btn--icon" id="undoBtn" type="button" aria-label="Undo last move" disabled>
+          <svg viewBox="0 0 24 24"><use href="#i-undo"/></svg>
+        </button>
+        <button class="btn btn--icon" id="settingsBtn" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><use href="#i-gear"/></svg>
+        </button>
+        <button class="btn btn--icon" id="achievementsBtn" type="button" aria-label="Achievements">
+          <svg viewBox="0 0 64 64"><use href="#i-trophy"/></svg>
+        </button>
+        <button class="btn btn--ghost" id="bookBtn" type="button" aria-label="Recipe book">
+          <svg viewBox="0 0 64 64"><use href="#i-book"/></svg>
+          <span class="btn__label">Recipes</span>
+        </button>
+        <button class="btn btn--icon" id="shopBtn" type="button" aria-label="Powerup shop">
+          <svg viewBox="0 0 64 64"><use href="#i-sparkle"/></svg>
+        </button>
+        <button class="btn btn--primary" id="crateBtn" type="button">
+          <svg viewBox="0 0 64 64"><use href="#i-crate-closed"/></svg>
+          <span class="btn__label">Spice Crate</span>
+          <span class="btn__cost"><svg viewBox="0 0 64 64"><use href="#i-coin"/></svg>25</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Restaurant Level + XP bar -->
+    <div class="level-bar" id="levelBar" aria-label="Restaurant Level">
+      <div class="level-bar__badge">
+        <span class="level-bar__label">Rank</span>
+        <span class="level-bar__num" id="levelNum">1</span>
+      </div>
+      <div class="level-bar__track">
+        <div class="level-bar__fill" id="levelFill"></div>
+        <span class="level-bar__title" id="levelTitle">Apprentice of the Souk</span>
+      </div>
+      <div class="level-bar__xp"><span id="xpVal">0</span> / <span id="xpMax">100</span> XP</div>
+    </div>
+
+    <section class="stage">
+      <!-- Left column: chef + customers -->
+      <aside class="stalls" aria-label="Customer orders">
+        <h2 class="stalls__title">Souk Orders</h2>
+        <button class="challenge" id="challengeCard" type="button" aria-label="Daily challenge">
+          <div class="challenge__crown">
+            <svg viewBox="0 0 64 64"><use href="#i-trophy"/></svg>
+          </div>
+          <div class="challenge__body">
+            <div class="challenge__eyebrow">Daily Challenge</div>
+            <div class="challenge__name" id="challengeName">Serve 3 orders</div>
+            <div class="challenge__track">
+              <div class="challenge__fill" id="challengeFill"></div>
+              <span class="challenge__progress" id="challengeProgress">0 / 3</span>
+            </div>
+          </div>
+          <div class="challenge__reward" id="challengeReward">
+            <svg viewBox="0 0 64 64"><use href="#i-coin"/></svg>200
+          </div>
+        </button>
+        <div class="orders" id="orders"></div>
+        <button class="btn btn--ghost btn--full" id="freeCrateBtn" type="button">
+          <svg viewBox="0 0 64 64"><use href="#i-sparkle"/></svg>
+          <span id="freeCrateLbl">Free crate ready!</span>
+        </button>
+      </aside>
+
+      <!-- Center: merge board -->
+      <div class="board-wrap">
+        <div class="board-frame">
+          <div class="board" id="board" role="grid" aria-label="Merge board"></div>
+        </div>
+        <div class="board-status" id="status" aria-live="polite">Tap or drag two matching ingredients to merge.</div>
+      </div>
+
+      <!-- Right column: hint + chef bubble -->
+      <aside class="chef" aria-label="Chef">
+        <div class="bubble" id="bubble">Ahlan! Merge the cumin to make ras el hanout.</div>
+        <div class="chef__figure" id="chefFigure" aria-hidden="true">
+          <picture class="chef__face">
+            <source id="chefFaceSrc" srcset="assets/mascot-karim-idle.webp" type="image/webp" />
+            <img id="chefFaceImg" class="chef__face-img" src="assets/mascot-karim-idle.png" alt="" />
+          </picture>
+        </div>
+        <div class="chef__stalls" aria-hidden="true">
+          <div class="stall stall--spice"></div>
+          <div class="stall stall--tea"></div>
+          <div class="stall stall--fruit"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       RECIPE BOOK MODAL
+       ============================================================ -->
+  <div class="modal" id="bookModal" role="dialog" aria-labelledby="bookTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="bookClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="bookTitle" class="modal__title">Grand Book of Maghreb Recipes</h2>
+      <p class="modal__lede">Every dish you master joins the empire. Silhouettes await your merges.</p>
+      <div class="book" id="bookGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SPICE CRATE OPENING MODAL
+       ============================================================ -->
+  <div class="modal modal--crate" id="crateModal" role="dialog" aria-labelledby="crateTitle" aria-hidden="true">
+    <div class="modal__panel modal__panel--crate">
+      <h2 id="crateTitle" class="modal__title">Spice Crate!</h2>
+      <div class="crate-reveal" id="crateReveal">
+        <svg class="crate-reveal__box" viewBox="0 0 64 64"><use href="#i-crate-closed"/></svg>
+        <div class="crate-reveal__items" id="crateItems"></div>
+      </div>
+      <button class="btn btn--primary" id="crateContinue" type="button">Take to Kitchen</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SETTINGS MODAL
+       ============================================================ -->
+  <div class="modal" id="settingsModal" role="dialog" aria-labelledby="settingsTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="settingsClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="settingsTitle" class="modal__title">Settings</h2>
+      <p class="modal__lede">Tune the kitchen to your taste.</p>
+
+      <ul class="settings">
+        <li class="setting">
+          <label class="setting__label" for="setSfx">Sound effects</label>
+          <span class="setting__help">Tap, merge, coin, and crate sounds.</span>
+          <button class="toggle" id="setSfx" role="switch" aria-checked="true" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setMusic">Ambient music</label>
+          <span class="setting__help">Soft riad drone in the background.</span>
+          <button class="toggle" id="setMusic" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setHaptics">Haptics</label>
+          <span class="setting__help">Buzz on merge and legendary discovery. Mobile only.</span>
+          <button class="toggle" id="setHaptics" role="switch" aria-checked="true" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setMotion">Reduced motion</label>
+          <span class="setting__help">Calm the ambient animation and big bursts.</span>
+          <button class="toggle" id="setMotion" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+        <li class="setting">
+          <label class="setting__label" for="setHiContrast">High contrast</label>
+          <span class="setting__help">Bolder outlines on tiles and cells.</span>
+          <button class="toggle" id="setHiContrast" role="switch" aria-checked="false" type="button"><span class="toggle__thumb"></span></button>
+        </li>
+      </ul>
+
+      <div class="settings__actions">
+        <button class="btn btn--ghost" id="setTutorialBtn" type="button">Replay Tutorial</button>
+        <button class="btn btn--danger" id="setResetBtn" type="button">Reset Progress</button>
+      </div>
+
+      <div class="settings__meta">
+        <span>Bniiine · v0.2</span>
+        <span>Long-press a tile to sell it for coins.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ACHIEVEMENTS MODAL
+       ============================================================ -->
+  <div class="modal" id="achievementsModal" role="dialog" aria-labelledby="achievementsTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="achievementsClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="achievementsTitle" class="modal__title">Hall of Chefs</h2>
+      <p class="modal__lede">Milestones you've mastered on your journey from souk to palace.</p>
+      <div class="achievements" id="achievementsGrid"></div>
+
+      <div class="stats" id="statsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TUTORIAL OVERLAY
+       ============================================================ -->
+  <div class="tutorial" id="tutorial" aria-hidden="true">
+    <div class="tutorial__spot" id="tutorialSpot"></div>
+    <div class="tutorial__card" id="tutorialCard">
+      <div class="tutorial__step">Step <span id="tutorialStep">1</span> / <span id="tutorialTotal">4</span></div>
+      <h3 class="tutorial__title" id="tutorialTitle">Welcome to the kitchen</h3>
+      <p class="tutorial__body" id="tutorialBody">Chef Karim will show you around.</p>
+      <div class="tutorial__actions">
+        <button class="btn btn--ghost" id="tutorialSkip" type="button">Skip</button>
+        <button class="btn btn--primary" id="tutorialNext" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       POWERUP SHOP MODAL
+       ============================================================ -->
+  <div class="modal" id="shopModal" role="dialog" aria-labelledby="shopTitle" aria-hidden="true">
+    <div class="modal__panel">
+      <button class="modal__close" id="shopClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24"><use href="#i-close"/></svg>
+      </button>
+      <h2 id="shopTitle" class="modal__title">Souk Powerups</h2>
+      <p class="modal__lede">Spice up your run. Cooldowns keep the flame steady.</p>
+      <div class="powerups" id="powerups"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       INTERACTIVE TUTORIAL HINT BUBBLE (pointer that follows target)
+       ============================================================ -->
+  <div class="tut-hint" id="tutHint" aria-hidden="true">
+    <div class="tut-hint__arrow" aria-hidden="true"></div>
+    <div class="tut-hint__body" id="tutHintBody">Tap here</div>
+  </div>
+
+  <!-- Long-press ring (positioned by JS) -->
+  <div class="long-press-ring" id="longPressRing" aria-hidden="true"></div>
+
+  <!-- Toast layer -->
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="game.js"></script>
+  <script type="module" src="native.js"></script>
+</body>
+</html>
