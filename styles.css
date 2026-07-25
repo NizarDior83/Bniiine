@@ -225,15 +225,45 @@ button:disabled {
 
 .scene__lantern {
   position: absolute;
-  width: 56px;
-  height: 56px;
-  filter: drop-shadow(0 0 22px rgba(255, 209, 102, 0.75)) drop-shadow(0 6px 6px rgba(0,0,0,0.35));
+  width: 90px;
+  height: 130px;
+  filter: drop-shadow(0 0 32px rgba(255, 209, 102, 0.7)) drop-shadow(0 6px 6px rgba(0,0,0,0.35));
   animation: lanternSway 6s ease-in-out infinite;
-  transform-origin: 50% 6%;
+  transform-origin: 50% 4%;
 }
 
-.scene__lantern--left  { left: 3vw;  top: 8vh; }
-.scene__lantern--right { right: 3vw; top: 10vh; animation-delay: -3s; }
+.scene__lantern--left  { left: 3vw;  top: 6vh; }
+.scene__lantern--right { right: 3vw; top: 8vh; animation-delay: -3s; }
+
+/* Palm frond corner decoration — bottom-left of the viewport */
+.scene::before,
+.scene::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 260px;
+  height: 260px;
+  background-image: image-set(url('assets/ornament-palm-fronds.webp') type('image/webp'), url('assets/ornament-palm-fronds.png') type('image/png'));
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 4px 12px rgba(43, 24, 16, 0.5));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scene::before { left: -40px;  bottom: 8vh; background-position: bottom left; }
+.scene::after  { right: -40px; bottom: 10vh; background-position: bottom right; transform: scaleX(-1); }
+
+@supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
+  .scene::before, .scene::after { background-image: url('assets/ornament-palm-fronds.png'); }
+}
+
+@media (max-width: 640px) {
+  .scene::before, .scene::after { width: 160px; height: 160px; }
+  .scene::before { left: -30px; }
+  .scene::after  { right: -30px; }
+  .scene__lantern { width: 60px; height: 88px; }
+}
 
 @keyframes lanternSway {
   0%, 100% { transform: rotate(-4deg); }
@@ -276,8 +306,8 @@ button:disabled {
   padding: var(--s-5);
   background-color: #2B1810;
   background-image:
-    linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.55) 100%),
-    image-set(url('assets/bg-title-hero.webp') type('image/webp'), url('assets/bg-title-hero.jpg') type('image/jpeg'));
+    linear-gradient(180deg, rgba(43,24,16,0.15) 0%, rgba(43,24,16,0.65) 100%),
+    image-set(url('assets/bg-title-souk.webp') type('image/webp'), url('assets/bg-title-souk.jpg') type('image/jpeg'));
   background-size: cover;
   background-position: center;
   transition: opacity 500ms var(--ease-soft), visibility 500ms;
@@ -286,8 +316,8 @@ button:disabled {
 @supports not (background-image: image-set(url('a.webp') type('image/webp'))) {
   .title {
     background-image:
-      linear-gradient(180deg, rgba(43,24,16,0.25) 0%, rgba(43,24,16,0.55) 100%),
-      url('assets/bg-title-hero.jpg');
+      linear-gradient(180deg, rgba(43,24,16,0.15) 0%, rgba(43,24,16,0.65) 100%),
+      url('assets/bg-title-souk.jpg');
   }
 }
 

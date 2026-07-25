@@ -4,6 +4,12 @@ Each block below is a **standalone prompt** you can paste into any image generat
 
 Every entry uses one of the **5 supported aspect ratios**: `1:1`, `3:4`, `9:16`, `16:9`, `4:3`. Nothing else appears in this document, so you can paste any prompt straight into your generator and pick the ratio it lists.
 
+## Delivery status
+
+- ✅ **Delivered and wired in-game**: splash + title logos (§2.1, §2.2), app icons + favicon (§2.3), Chef Karim 4 expressions (§3.2), splash + title + medina backdrops (§1.2, §4.1, §4.2, §4.3, §4.4), zellige tile pattern (§5.1), medina silhouette (§5.2), **all 15 ingredient tiles (§6)**, coin (§7.1), spice crate closed (§7.2), lantern (§7.6), order-card frame (§7.7), button ornament (§7.8), gear (§7.9), trophy (§7.10), arabesque divider (§8.1), arch frame (§8.2), steam wisps (§8.3), palm frond corners (§8.4), **all 3 customers (§3.3, sliced from your sheet)**
+- 🟡 **Nice-to-have, still missing**: mascot hero full-body pose (§3.1 — the 4 head-and-shoulders faces are enough for the game already), splash-hero landscape (§1.1 — portrait covers most cases), splash-bg (§1.3 — using zellige-rays background), Spice Crate open (§7.3 — the closed crate + confetti burst reads the reveal moment fine), recipe book cover (§7.4 — modal title reads well without it), sparkle burst (§7.5 — using confetti + CSS bloom)
+- ⚪ **Skip**: confetti sheet (§8.5 — game generates procedural confetti)
+
 ## 0 · Master style anchor
 
 Do **not** modify this — it's already baked into every prompt below.
@@ -106,12 +112,24 @@ Shared envelope for all 4:
 **3.2d — `assets/mascot-karim-wipe.png` — Wiping brow (legendary tier-5 merge)**
 > Chef Karim, head-and-shoulders portrait, transparent background. Sleeves rolled up, determined focus, wiping his brow with a small cloth held in one hand, tiny drop of sweat, warm intense look. Same crop and character as 3.2a.
 
-### 3.3 — Customer characters
-- **File:** `assets/customers-sheet.png`
-- **Size:** 2400×1350, transparent PNG
-- **Aspect ratio:** 16:9
-- **Prompt:**
-> Three friendly Moroccan / Tunisian customer characters, full-body cartoony but grounded, arranged in a horizontal row on a transparent background: **(1) Older grandmother** in a colorful teal-and-gold caftan and headscarf, holding a small clay teapot, warm smile; **(2) Young man** in modern casual clothes over a djellaba, curious expression, phone in one hand; **(3) Traveling merchant** with rolled fabrics slung over shoulder, gold earring, hearty laugh. Diverse ages, all with warm brown skin tones and expressive kind faces. Cohesive with Chef Karim's style. Each character stands with a small shadow beneath. Space between characters equal.
+### 3.3 — Customer characters (3 separate PNGs)
+
+**Deliver as 3 individual files, not one sheet.** Each customer appears on order cards as an avatar. Separate files keep swap logic to a single `<img>` src change per order.
+
+Shared envelope for all 3:
+- **Size:** 512×768, transparent PNG (portrait crop, waist-up OK)
+- **Aspect ratio:** 3:4
+- **Framing:** full-body or three-quarter, centered, standing pose, small shadow beneath, transparent background
+- **Consistency:** all three share the same style, warm brown skin tones, expressive kind faces
+
+**3.3a — `assets/customer-1-grandma.png` — Older grandmother**
+> Older Moroccan grandmother in a colorful teal-and-gold caftan and headscarf, holding a small brass teapot, kind wrinkled smile, gentle eyes. Warm rim light from upper left. Transparent background.
+
+**3.3b — `assets/customer-2-young-man.png` — Young man in djellaba**
+> Young Moroccan man in a warm ochre-yellow djellaba over modern casual clothes, curious friendly expression, small satchel or bag across the shoulder. Same character design language as 3.3a. Transparent background.
+
+**3.3c — `assets/customer-3-merchant.png` — Traveling merchant**
+> Portly Moroccan traveling merchant in a beige tunic with turban, warm hearty smile, bundles of rolled colored fabrics on his back. Same character design language as 3.3a. Transparent background.
 
 ---
 
@@ -336,11 +354,12 @@ Shared envelope for all 4:
 - **Prompt:**
 > Cluster of three date-palm fronds arching gracefully from a bottom corner, deep emerald and teal fronds with warm golden-hour rim light on the top edges, small cluster of orange dates at the base. Ready to place in a page corner.
 
-### 8.5 — Confetti particles (sheet)
-- **File:** `assets/fx-confetti-sheet.png`
-- **Size:** 2048×2048, transparent
-- **Aspect ratio:** 1:1
-- **Prompt:**
+### 8.5 — Confetti particles — **NOT NEEDED (procedural)**
+
+The game already draws confetti procedurally in JS with `confettiBurst(x, y, count)` — small colored rectangles from the game palette, animated with random velocities, rotation, and gravity. Feels great, no asset needed.
+
+**Skip this entry.** Only regenerate if you want a specifically-styled confetti (e.g. tiny spice grains and eight-point stars) — in that case use the prompt below.
+
 > A sprite sheet of 24 small confetti shapes in warm sunset and jewel-tone colors: rectangles, spirals, spice grains, and tiny eight-point stars. Each shape is roughly 128×128 with margin between them, laid out in a 4×6 grid. Bright, punchy, drop-shadowed. Ready to slice into individual assets.
 
 ---
