@@ -1,0 +1,36 @@
+<!--
+  Reference override for android/app/src/main/AndroidManifest.xml
+  Merge these into the manifest that `npx cap add android` generates.
+
+  Key settings:
+  - screenOrientation=portrait so the game locks to phone portrait
+  - hardwareAccelerated + largeHeap for smoother WebView animation
+  - keep-awake permission for the KeepAwake plugin
+  - vibrate permission for haptics
+  - configChanges=keyboardHidden|orientation|screenSize so orientation lock
+    doesn't recreate the activity on rotate attempts
+-->
+<application
+    android:allowBackup="true"
+    android:supportsRtl="true"
+    android:hardwareAccelerated="true"
+    android:largeHeap="true"
+    android:usesCleartextTraffic="false">
+
+    <activity
+        android:name=".MainActivity"
+        android:label="Bniine"
+        android:launchMode="singleTask"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+        android:screenOrientation="portrait"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+</application>
+
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
