@@ -2,6 +2,21 @@
 
 This folder ships the same Bniine game as the web version, wrapped in [Capacitor](https://capacitorjs.com) for a real Android APK / AAB. All hand-drawn assets (chef faces, ingredients, backgrounds, lantern, coin, trophy, palm fronds, etc.) are bundled under `www/assets/` and load offline from the APK.
 
+## Fastest path: let GitHub Actions build the APK for you
+
+If you don't want to install Android Studio locally, the repo has a workflow that builds the APK in the cloud:
+
+1. Go to **Actions** on the repo page
+2. Click **Build Android APK**
+3. Click **Run workflow** (top right) → **Run workflow**
+4. Wait ~5 minutes for the run to finish
+5. Open the completed run and download the `bniine-debug-apk` artifact — it's a `.zip` containing `app-debug.apk`
+6. Copy the APK to your phone and install (enable "Install unknown apps" for whatever you sideload with)
+
+The workflow also fires automatically on every push to `main` that touches the game code, so every commit produces a fresh APK you can download.
+
+The steps below are for building **locally** if you prefer to iterate faster or need a signed release build.
+
 ## What sits in this folder
 
 ```
