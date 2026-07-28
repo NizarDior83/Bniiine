@@ -799,17 +799,28 @@
     undoBtn.disabled = undoStack.length === 0;
   }
 
+  const CUSTOMER_AVATARS = [
+    { name: 'Grandma', base: 'customer-1-grandma' },
+    { name: 'Young Merchant', base: 'customer-2-young-man' },
+    { name: 'Trader', base: 'customer-3-merchant' },
+  ];
+
   function renderOrders() {
     ordersEl.innerHTML = '';
     state.orders.forEach((o, i) => {
       const def = chainDef(o.chain, o.tier);
+      const cust = CUSTOMER_AVATARS[i % CUSTOMER_AVATARS.length];
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'order';
       if (activeOrderIdx === i) el.classList.add('is-active');
       el.dataset.idx = String(i);
-      el.setAttribute('aria-label', `Order: ${def.name}, tier ${o.tier}, reward ${o.reward}`);
+      el.setAttribute('aria-label', `Order from ${cust.name}: ${def.name}, tier ${o.tier}, reward ${o.reward}`);
       el.innerHTML = `
+        <picture class="order__avatar">
+          <source srcset="assets/${cust.base}.webp" type="image/webp" />
+          <img class="order__avatar-img" src="assets/${cust.base}.png" alt="${cust.name}" />
+        </picture>
         <span class="order__icon"><svg viewBox="0 0 64 64"><use href="${def.icon}"/></svg></span>
         <span class="order__info">
           <span class="order__name">${def.name}</span>
